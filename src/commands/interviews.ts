@@ -197,6 +197,25 @@ export function registerInterviewsCommand(program: Command): void {
     })
 
   interviews
+    .command("share <slug>")
+    .description("Create share link for respondents (auto-publishes if draft)")
+    .action(async (slug: string) => {
+      try {
+        const client = getClient()
+        const data = await client.post<{ slug: string; status: string; share_url: string; message: string }>(
+          `/interviews/${slug}/share-link`
+        )
+        success(data.message)
+        printKeyValue([
+          ["分享链接", `${getSiteUrl()}${data.share_url}`],
+          ["状态", data.status],
+        ])
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  interviews
     .command("stats <slug>")
     .description("Get interview statistics")
     .action(async (slug: string) => {
