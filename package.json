@@ -1,0 +1,57 @@
+{
+  "name": "@mizzen/cli",
+  "version": "0.1.0",
+  "description": "Mizzen CLI — manage interviews, study guides and conversation data from the command line",
+  "type": "module",
+  "bin": {
+    "mizzen": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist/index.js",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "bundle": "node scripts/bundle.js",
+    "prepublishOnly": "npm run bundle",
+    "typecheck": "bun x tsc --noEmit",
+    "test": "bun test"
+  },
+  "keywords": [
+    "mizzen",
+    "cli",
+    "interview",
+    "research",
+    "open-api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MizzenAI/mizzen-cli.git"
+  },
+  "homepage": "https://mizzen.chat",
+  "bugs": {
+    "url": "https://github.com/MizzenAI/mizzen-cli/issues"
+  },
+  "author": "MizzenAI",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.4.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^13.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
