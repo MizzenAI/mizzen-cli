@@ -100,15 +100,24 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--welcome <msg>", "Welcome message")
     .option("--closing <msg>", "Closing message")
     .option("--language <lang>", "User language", "zh-CN")
+    .option("--mode <mode>", "Interview mode: audio, video, video_screen, text", "audio")
+    .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
+    .option("--tts", "Enable AI text-to-speech")
     .action(async (opts: {
       title: string; description?: string; background?: string;
-      goal?: string; welcome?: string; closing?: string; language: string
+      goal?: string; welcome?: string; closing?: string; language: string;
+      mode: string; talkMode: string; tts?: boolean
     }) => {
       try {
         const client = getClient()
         const body: Record<string, unknown> = {
           title: opts.title,
           userLanguage: opts.language,
+          config: {
+            interviewMode: opts.mode,
+            talkMode: opts.talkMode,
+            ...(opts.tts ? { tts: true } : {}),
+          },
         }
         if (opts.description) body["description"] = opts.description
         if (opts.background) body["background"] = opts.background
@@ -139,9 +148,14 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--welcome <msg>", "New welcome message")
     .option("--closing <msg>", "New closing message")
     .option("--language <lang>", "New user language")
+    .option("--mode <mode>", "Interview mode: audio, video, video_screen, text")
+    .option("--talk-mode <mode>", "Talk mode: manual, auto")
+    .option("--tts", "Enable AI text-to-speech")
+    .option("--no-tts", "Disable AI text-to-speech")
     .action(async (slug: string, opts: {
       title?: string; description?: string; background?: string;
-      goal?: string; welcome?: string; closing?: string; language?: string
+      goal?: string; welcome?: string; closing?: string; language?: string;
+      mode?: string; talkMode?: string; tts?: boolean
     }) => {
       try {
         const client = getClient()
@@ -153,6 +167,13 @@ export function registerInterviewsCommand(program: Command): void {
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
         if (opts.closing) body["closingMessage"] = opts.closing
         if (opts.language) body["userLanguage"] = opts.language
+        if (opts.mode || opts.talkMode || opts.tts !== undefined) {
+          const config: Record<string, unknown> = {}
+          if (opts.mode) config["interviewMode"] = opts.mode
+          if (opts.talkMode) config["talkMode"] = opts.talkMode
+          if (opts.tts !== undefined) config["tts"] = opts.tts
+          body["config"] = config
+        }
 
         const data = await client.put<Interview>(`/interviews/${slug}`, body)
         success(`Interview ${slug} updated`)
