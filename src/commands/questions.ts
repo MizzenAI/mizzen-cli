@@ -113,6 +113,7 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--type <type>", "Question type: open_ended, multiple_choice, scale, statement", "open_ended")
     .option("--follow-up <level>", "Follow-up: none, light, heavy, auto")
     .option("--options <opts>", "Comma-separated options, use +/- prefix for approve/reject (e.g. +全职,-学生,其他)")
+    .option("--multi-select", "Allow multiple selections (for multiple_choice)")
     .option("--min-label <label>", "Scale min label (for scale type)")
     .option("--max-label <label>", "Scale max label (for scale type)")
     .option("--instructions <text>", "Interview guide instructions")
@@ -120,7 +121,7 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, sectionId: string, opts: {
       text: string; type: string; followUp?: string; options?: string;
-      minLabel?: string; maxLabel?: string; instructions?: string; after?: string;
+      multiSelect?: boolean; minLabel?: string; maxLabel?: string; instructions?: string; after?: string;
       payload?: string
     }) => {
       try {
@@ -137,6 +138,7 @@ export function registerQuestionsCommand(program: Command): void {
           }
           if (opts.followUp) body["followUp"] = opts.followUp
           if (opts.options) body["options"] = parseOptions(opts.options)
+          if (opts.multiSelect) body["multiSelect"] = true
           if (opts.minLabel || opts.maxLabel) {
             body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
           }
@@ -159,13 +161,15 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--type <type>", "New question type")
     .option("--follow-up <level>", "New follow-up level")
     .option("--options <opts>", "New comma-separated options, use +/- prefix for approve/reject")
+    .option("--multi-select", "Allow multiple selections")
+    .option("--no-multi-select", "Single selection only")
     .option("--min-label <label>", "New scale min label")
     .option("--max-label <label>", "New scale max label")
     .option("--instructions <text>", "New interview guide instructions")
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, questionId: string, opts: {
       text?: string; type?: string; followUp?: string; options?: string;
-      minLabel?: string; maxLabel?: string; instructions?: string; payload?: string
+      multiSelect?: boolean; minLabel?: string; maxLabel?: string; instructions?: string; payload?: string
     }) => {
       try {
         const client = getClient()
@@ -179,6 +183,7 @@ export function registerQuestionsCommand(program: Command): void {
           if (opts.type) body["questionType"] = opts.type
           if (opts.followUp) body["followUp"] = opts.followUp
           if (opts.options) body["options"] = parseOptions(opts.options)
+          if (opts.multiSelect !== undefined) body["multiSelect"] = opts.multiSelect
           if (opts.minLabel || opts.maxLabel) {
             body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
           }
