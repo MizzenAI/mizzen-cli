@@ -59,6 +59,9 @@ export function updateConfig(key: string, value: string): Config {
   if (section === "api" && field === "base_url") {
     return saveAndReturn({ ...config, api: { ...config.api, base_url: value } })
   }
+  if (section === "api" && field === "site_url") {
+    return saveAndReturn({ ...config, api: { ...config.api, site_url: value } })
+  }
   if (section === "api" && field === "timeout") {
     const num = parseInt(value, 10)
     if (isNaN(num)) throw new Error(`Invalid timeout value: ${value}`)
@@ -80,7 +83,7 @@ export function updateConfig(key: string, value: string): Config {
   }
 
   throw new Error(
-    `Unknown config key: ${key}. Valid keys: api.base_url, api.timeout, output.format, output.color`
+    `Unknown config key: ${key}. Valid keys: api.base_url, api.site_url, api.timeout, output.format, output.color`
   )
 }
 

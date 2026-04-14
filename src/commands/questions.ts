@@ -3,6 +3,25 @@ import { getClient } from "../client"
 import { success, printJson } from "../output"
 import { handleError } from "../errors"
 
+/**
+ * Parse options string with +/- prefix for approve/reject status.
+ * "+全职" → { text: "全职", status: "approve" }
+ * "-学生" → { text: "学生", status: "reject" }
+ * "其他"  → { text: "其他" }
+ */
+function parseOptions(raw: string): Array<{ text: string; status?: string }> {
+  return raw.split(",").map((o) => {
+    const trimmed = o.trim()
+    if (trimmed.startsWith("+")) {
+      return { text: trimmed.slice(1), status: "approve" }
+    }
+    if (trimmed.startsWith("-")) {
+      return { text: trimmed.slice(1), status: "reject" }
+    }
+    return { text: trimmed }
+  })
+}
+
 export function registerQuestionsCommand(program: Command): void {
   const questions = program
     .command("questions")
@@ -93,26 +112,37 @@ export function registerQuestionsCommand(program: Command): void {
     .requiredOption("--text <text>", "Question text")
     .option("--type <type>", "Question type: open_ended, multiple_choice, scale, statement", "open_ended")
     .option("--follow-up <level>", "Follow-up: none, light, heavy, auto")
-    .option("--options <opts>", "Comma-separated options (for multiple_choice)")
+    .option("--options <opts>", "Comma-separated options, use +/- prefix for approve/reject (e.g. +全职,-学生,其他)")
+    .option("--min-label <label>", "Scale min label (for scale type)")
+    .option("--max-label <label>", "Scale max label (for scale type)")
     .option("--instructions <text>", "Interview guide instructions")
     .option("--after <uuid>", "Insert after this question UUID")
+    .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, sectionId: string, opts: {
       text: string; type: string; followUp?: string; options?: string;
-      instructions?: string; after?: string
+      minLabel?: string; maxLabel?: string; instructions?: string; after?: string;
+      payload?: string
     }) => {
       try {
         const client = getClient()
-        const body: Record<string, unknown> = {
-          text: opts.text,
-          questionType: opts.type,
-          itemType: opts.type === "statement" ? "statement" : "question",
+        let body: Record<string, unknown>
+
+        if (opts.payload) {
+          body = JSON.parse(opts.payload)
+        } else {
+          body = {
+            text: opts.text,
+            questionType: opts.type,
+            itemType: opts.type === "statement" ? "statement" : "question",
+          }
+          if (opts.followUp) body["followUp"] = opts.followUp
+          if (opts.options) body["options"] = parseOptions(opts.options)
+          if (opts.minLabel || opts.maxLabel) {
+            body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
+          }
+          if (opts.instructions) body["addInstructions"] = opts.instructions
+          if (opts.after) body["after"] = opts.after
         }
-        if (opts.followUp) body["followUp"] = opts.followUp
-        if (opts.options) {
-          body["options"] = opts.options.split(",").map((o) => ({ text: o.trim() }))
-        }
-        if (opts.instructions) body["addInstructions"] = opts.instructions
-        if (opts.after) body["after"] = opts.after
 
         const data = await client.post(`/interviews/${slug}/sections/${sectionId}/questions`, body)
         success("Question added")
@@ -128,21 +158,32 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--text <text>", "New question text")
     .option("--type <type>", "New question type")
     .option("--follow-up <level>", "New follow-up level")
-    .option("--options <opts>", "New comma-separated options")
+    .option("--options <opts>", "New comma-separated options, use +/- prefix for approve/reject")
+    .option("--min-label <label>", "New scale min label")
+    .option("--max-label <label>", "New scale max label")
     .option("--instructions <text>", "New interview guide instructions")
+    .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, questionId: string, opts: {
-      text?: string; type?: string; followUp?: string; options?: string; instructions?: string
+      text?: string; type?: string; followUp?: string; options?: string;
+      minLabel?: string; maxLabel?: string; instructions?: string; payload?: string
     }) => {
       try {
         const client = getClient()
-        const body: Record<string, unknown> = {}
-        if (opts.text) body["text"] = opts.text
-        if (opts.type) body["questionType"] = opts.type
-        if (opts.followUp) body["followUp"] = opts.followUp
-        if (opts.options) {
-          body["options"] = opts.options.split(",").map((o) => ({ text: o.trim() }))
+        let body: Record<string, unknown>
+
+        if (opts.payload) {
+          body = JSON.parse(opts.payload)
+        } else {
+          body = {}
+          if (opts.text) body["text"] = opts.text
+          if (opts.type) body["questionType"] = opts.type
+          if (opts.followUp) body["followUp"] = opts.followUp
+          if (opts.options) body["options"] = parseOptions(opts.options)
+          if (opts.minLabel || opts.maxLabel) {
+            body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
+          }
+          if (opts.instructions) body["addInstructions"] = opts.instructions
         }
-        if (opts.instructions) body["addInstructions"] = opts.instructions
 
         const data = await client.patch(`/interviews/${slug}/questions/${questionId}`, body)
         success("Question updated")
@@ -160,6 +201,21 @@ export function registerQuestionsCommand(program: Command): void {
         const client = getClient()
         await client.delete(`/interviews/${slug}/questions/${questionId}`)
         success("Question deleted")
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  questions
+    .command("reorder <slug> <section-id>")
+    .description("Reorder questions within a section by UUID list")
+    .argument("<uuids...>", "Ordered question UUIDs")
+    .action(async (slug: string, sectionId: string, uuids: string[]) => {
+      try {
+        const client = getClient()
+        const data = await client.put(`/interviews/${slug}/sections/${sectionId}/questions/reorder`, { order: uuids })
+        success("Questions reordered")
+        printJson(data)
       } catch (err) {
         handleError(err)
       }

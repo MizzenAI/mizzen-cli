@@ -9,6 +9,7 @@ import { registerConfigCommand } from "./commands/config"
 import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerQuestionsCommand } from "./commands/questions"
+import { registerInsightsCommand } from "./commands/insights"
 
 function loadVersion(): string {
   try {
@@ -51,6 +52,7 @@ function createProgram(): Command {
   registerInterviewsCommand(program)
   registerQuestionsCommand(program)
   registerConversationsCommand(program)
+  registerInsightsCommand(program)
   registerConfigCommand(program)
 
   return program

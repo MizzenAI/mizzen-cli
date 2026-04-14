@@ -1,8 +1,15 @@
 import { Command } from "commander"
 import { getClient } from "../client"
+import { loadConfig } from "../config"
 import { printData, printKeyValue, success } from "../output"
 import { handleError } from "../errors"
 import type { Interview, InterviewListResponse, InterviewStats, OutlineResponse } from "../types/api"
+
+function getInterviewUrl(slug: string): string {
+  const config = loadConfig()
+  const siteUrl = config.api.site_url.replace(/\/$/, "")
+  return `${siteUrl}/interview/${slug}`
+}
 
 function statusColor(status: string): string {
   switch (status) {
@@ -69,6 +76,7 @@ export function registerInterviewsCommand(program: Command): void {
           ["Participants", String(data.participant_count)],
           ["Created", data.created_at?.slice(0, 10) ?? "-"],
           ["Published", data.published_at?.slice(0, 10) ?? "-"],
+          ["URL", getInterviewUrl(data.slug)],
         ])
       } catch (err) {
         handleError(err)
@@ -107,6 +115,44 @@ export function registerInterviewsCommand(program: Command): void {
           ["Slug", data.slug],
           ["Title", data.title],
           ["Status", data.status],
+          ["URL", getInterviewUrl(data.slug)],
+        ])
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  interviews
+    .command("update <slug>")
+    .description("Update an interview")
+    .option("-t, --title <title>", "New title")
+    .option("-d, --description <desc>", "New description")
+    .option("--background <bg>", "New background")
+    .option("--goal <goal>", "New study goal")
+    .option("--welcome <msg>", "New welcome message")
+    .option("--closing <msg>", "New closing message")
+    .option("--language <lang>", "New user language")
+    .action(async (slug: string, opts: {
+      title?: string; description?: string; background?: string;
+      goal?: string; welcome?: string; closing?: string; language?: string
+    }) => {
+      try {
+        const client = getClient()
+        const body: Record<string, unknown> = {}
+        if (opts.title) body["title"] = opts.title
+        if (opts.description) body["description"] = opts.description
+        if (opts.background) body["background"] = opts.background
+        if (opts.goal) body["studyGoal"] = opts.goal
+        if (opts.welcome) body["welcomeMessage"] = opts.welcome
+        if (opts.closing) body["closingMessage"] = opts.closing
+        if (opts.language) body["userLanguage"] = opts.language
+
+        const data = await client.put<Interview>(`/interviews/${slug}`, body)
+        success(`Interview ${slug} updated`)
+        printKeyValue([
+          ["Slug", data.slug],
+          ["Title", data.title || "(untitled)"],
+          ["Status", data.status],
         ])
       } catch (err) {
         handleError(err)
@@ -134,32 +180,7 @@ export function registerInterviewsCommand(program: Command): void {
         const client = getClient()
         await client.post(`/interviews/${slug}/publish`)
         success(`Interview ${slug} published`)
-      } catch (err) {
-        handleError(err)
-      }
-    })
-
-  interviews
-    .command("pause <slug>")
-    .description("Pause an active interview")
-    .action(async (slug: string) => {
-      try {
-        const client = getClient()
-        await client.post(`/interviews/${slug}/pause`)
-        success(`Interview ${slug} paused`)
-      } catch (err) {
-        handleError(err)
-      }
-    })
-
-  interviews
-    .command("resume <slug>")
-    .description("Resume a paused interview")
-    .action(async (slug: string) => {
-      try {
-        const client = getClient()
-        await client.post(`/interviews/${slug}/resume`)
-        success(`Interview ${slug} resumed`)
+        printKeyValue([["URL", getInterviewUrl(slug)]])
       } catch (err) {
         handleError(err)
       }
