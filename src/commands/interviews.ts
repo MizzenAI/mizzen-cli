@@ -5,10 +5,16 @@ import { printData, printKeyValue, success } from "../output"
 import { handleError } from "../errors"
 import type { Interview, InterviewListResponse, InterviewStats, OutlineResponse } from "../types/api"
 
-function getInterviewUrl(slug: string): string {
-  const config = loadConfig()
-  const siteUrl = config.api.site_url.replace(/\/$/, "")
-  return `${siteUrl}/interview/${slug}`
+function getSiteUrl(): string {
+  return loadConfig().api.site_url.replace(/\/$/, "")
+}
+
+function getManageUrl(slug: string): string {
+  return `${getSiteUrl()}/interview/${slug}/create`
+}
+
+function getShareUrl(slug: string): string {
+  return `${getSiteUrl()}/interview/${slug}?source=link`
 }
 
 function statusColor(status: string): string {
@@ -76,7 +82,8 @@ export function registerInterviewsCommand(program: Command): void {
           ["Participants", String(data.participant_count)],
           ["Created", data.created_at?.slice(0, 10) ?? "-"],
           ["Published", data.published_at?.slice(0, 10) ?? "-"],
-          ["URL", getInterviewUrl(data.slug)],
+          ["管理链接", getManageUrl(data.slug)],
+          ["分享链接", data.status === "active" ? getShareUrl(data.slug) : "(需先发布)"],
         ])
       } catch (err) {
         handleError(err)
@@ -115,7 +122,7 @@ export function registerInterviewsCommand(program: Command): void {
           ["Slug", data.slug],
           ["Title", data.title],
           ["Status", data.status],
-          ["URL", getInterviewUrl(data.slug)],
+          ["管理链接", getManageUrl(data.slug)],
         ])
       } catch (err) {
         handleError(err)
@@ -180,7 +187,10 @@ export function registerInterviewsCommand(program: Command): void {
         const client = getClient()
         await client.post(`/interviews/${slug}/publish`)
         success(`Interview ${slug} published`)
-        printKeyValue([["URL", getInterviewUrl(slug)]])
+        printKeyValue([
+          ["分享链接", getShareUrl(slug)],
+          ["管理链接", getManageUrl(slug)],
+        ])
       } catch (err) {
         handleError(err)
       }
