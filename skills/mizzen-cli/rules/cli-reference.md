@@ -47,6 +47,8 @@ mizzen interviews create \
 
 # 修改
 mizzen interviews update <slug> -t "新标题" --goal "新目标"
+mizzen interviews update <slug> --mode video --talk-mode auto --tts
+mizzen interviews update <slug> --external-title "新的对外标题"
 
 # 删除
 mizzen interviews delete <slug>
@@ -191,8 +193,10 @@ mizzen insights generate <slug> --include-incomplete
 ```bash
 mizzen config show                              # 查看配置
 mizzen config set api.base_url https://...      # 修改 API 地址
-mizzen config set api.timeout 60                # 修改超时时间
-mizzen config set output.format json            # 默认输出格式
+mizzen config set api.site_url https://...      # 修改前端站点地址（影响分享链接）
+mizzen config set api.timeout 60                # 修改超时时间（秒）
+mizzen config set output.format json            # 默认输出格式（table/json/csv）
+mizzen config set output.color false            # 禁用颜色输出
 mizzen config reset                             # 重置为默认
 ```
 

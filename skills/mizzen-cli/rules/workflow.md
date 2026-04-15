@@ -152,3 +152,92 @@ mizzen questions delete <slug> <question-id>
 mizzen questions reorder-sections <slug> <uuid1> <uuid2> <uuid3>
 mizzen questions reorder <slug> <section-id> <uuid1> <uuid2>
 ```
+
+## 决策指引：什么时候问用户，什么时候自己决定
+
+| 环节 | 自己决定 | 问用户 |
+|------|----------|--------|
+| 大纲结构（几个板块、每板块几题） | ✅ 按方法论设计 | 展示后等确认 |
+| 题目文本 | ✅ 按方法论撰写 | 展示后等确认 |
+| 追问级别 | ✅ 按题型自动选 | 不需要问 |
+| 访谈模式（audio/video/text） | ❌ | ✅ 必须问 |
+| 对外标题 | ✅ 可以建议 | 展示后等确认 |
+| 欢迎语/结束语 | ✅ 按方法论撰写 | 展示后等确认 |
+| 甄别题选项的 approve/reject | ✅ 按目标人群判断 | 不需要问 |
+| 发布 | ❌ | ✅ 必须问 |
+
+## 完整示例：从零创建一个产品体验访谈
+
+以下是一个完整的端到端流程，展示 agent 应该怎么执行：
+
+```bash
+# 第一步：创建访谈
+mizzen interviews create \
+  -t "竞品用户流失分析" \
+  --external-title "产品使用体验调研" \
+  --background "近3个月用户流失率上升15%，需要了解原因" \
+  --goal "挖掘用户放弃使用产品的核心原因和决策过程" \
+  --welcome "你好！感谢参与本次调研。我们想了解你使用产品的真实体验，大概需要15分钟。" \
+  --closing "感谢你的分享！你的反馈对我们非常有价值。" \
+  --mode audio
+# → 返回 slug: abc123
+
+# 第二步：添加甄别板块
+mizzen questions add-section abc123 -t "基本信息" --type screening
+# → 返回 section_id: s1-uuid
+
+# 添加甄别题
+mizzen questions add abc123 s1-uuid \
+  --text "你使用过以下哪款产品？" \
+  --type multiple_choice \
+  --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
+  --follow-up none
+
+# 第三步：添加暖场板块
+mizzen questions add-section abc123 -t "使用背景" --type flat
+# → 返回 section_id: s2-uuid
+
+mizzen questions add abc123 s2-uuid \
+  --text "你最早是怎么知道这款产品的？大概用了多久？" \
+  --type open_ended \
+  --follow-up light
+
+# 第四步：添加核心探索板块
+mizzen questions add-section abc123 -t "使用体验" --type flat
+# → 返回 section_id: s3-uuid
+
+mizzen questions add abc123 s3-uuid \
+  --text "你上次使用这款产品是什么时候？当时在做什么？" \
+  --type open_ended \
+  --follow-up heavy
+
+mizzen questions add abc123 s3-uuid \
+  --text "有没有哪个功能或体验让你觉得不满意？能具体说说吗？" \
+  --type open_ended \
+  --follow-up heavy
+
+mizzen questions add abc123 s3-uuid \
+  --text "你对产品整体的满意程度？" \
+  --type scale \
+  --min-label "非常不满意" \
+  --max-label "非常满意"
+
+# 第五步：添加收尾板块
+mizzen questions add-section abc123 -t "总结" --type flat
+# → 返回 section_id: s4-uuid
+
+mizzen questions add abc123 s4-uuid \
+  --text "如果能改变这款产品的一个地方，你最希望改什么？" \
+  --type open_ended \
+  --follow-up light
+
+# 第六步：确认大纲
+mizzen interviews outline abc123
+
+# 第七步：发布
+mizzen interviews publish abc123
+
+# 第八步：生成分享链接
+mizzen interviews share abc123
+# → 返回分享链接给用户
+```
