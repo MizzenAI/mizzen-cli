@@ -107,8 +107,10 @@ mizzen interview stats <slug>
 - **欢迎语不能泄露甄别标准**。比如研究"流失用户"，欢迎语不能说"我们想了解你为什么不用了"
 - **结束语不能再提新问题**
 - **访谈模式必须问用户**，不要自己决定
+- **已发布的访谈修改后必须重新发布**。修改题目、板块、访谈配置后，需要再次执行 `interview publish <slug>` 才能让新受访者看到更新内容
 - **发布前必须问用户确认**，不要自动发布
 - **`share` 会自动发布**。如果访谈是 draft 状态，`share` 会先发布再生成链接
+- **修改后主动提醒用户重新发布**。完成修改操作后，告知用户需要执行 `interview publish` 使修改生效
 - **`get` 返回管理链接和分享链接**。用户问"访谈链接"时用 `get` 查看
 - **`stats` 查看访谈统计**。用户问"有多少人参与了"时用 `stats`
 - **删除操作不可恢复**，必须向用户确认
@@ -120,7 +122,7 @@ mizzen interview stats <slug>
 | `401 Unauthorized` | API Key 未配置或无效 | 运行 `mizzen auth set-key <key>` |
 | `title is required` | 缺少 `-t` 参数 | 必须传标题 |
 | `Interview not found` | slug 不正确 | 用 `interview list` 查找正确的 slug |
-| `Interview is already active` | 重复发布 | 已发布的访谈无需再次发布 |
+| `Interview is already active` | 访谈已是 active 状态 | 这不影响重新发布，修改内容后仍需 `publish` 使变更生效 |
 
 ## References
 

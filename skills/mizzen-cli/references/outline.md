@@ -187,6 +187,7 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 - **题目设计必须遵循方法论**。详见 [question-design.md](../rules/question-design.md) 和 [screening.md](../rules/screening.md)
 - **`question-id` 从 `outline show` 获取**，不要猜测或编造 UUID
 - **`--payload` 是兜底方案**，只在常规参数无法满足需求时使用
+- **修改已发布访谈的大纲后，必须重新发布**。完成修改后提醒用户执行 `interview publish <slug>`
 
 ---
 
