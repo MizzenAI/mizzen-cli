@@ -20,7 +20,7 @@ function getShareUrl(slug: string): string {
 
 export function registerInterviewsCommand(program: Command): void {
   const interviews = program
-    .command("interviews")
+    .command("interviews").alias("interview")
     .description("Manage interviews")
 
   interviews
