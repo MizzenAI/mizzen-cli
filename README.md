@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://mizzen.chat/logo.svg" alt="Mizzen" width="100" />
-</p>
-
 <h1 align="center">Mizzen CLI</h1>
 
 <p align="center">
