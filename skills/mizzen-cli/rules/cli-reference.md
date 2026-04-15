@@ -24,7 +24,6 @@ mizzen interviews get <slug>
 # 创建
 mizzen interviews create \
   -t "标题" \
-  -d "描述" \
   --background "研究背景" \
   --goal "研究目标" \
   --welcome "欢迎语" \

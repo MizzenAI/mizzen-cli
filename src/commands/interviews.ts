@@ -75,7 +75,6 @@ export function registerInterviewsCommand(program: Command): void {
           ["Slug", data.slug],
           ["Title", data.title || "(untitled)"],
           ["Status", data.status],
-          ["Description", data.description || "-"],
           ["Background", data.background || "-"],
           ["Study Goal", data.study_goal || "-"],
           ["Language", data.user_language],
@@ -94,7 +93,6 @@ export function registerInterviewsCommand(program: Command): void {
     .command("create")
     .description("Create a new interview")
     .requiredOption("-t, --title <title>", "Interview title")
-    .option("-d, --description <desc>", "Description")
     .option("--background <bg>", "Research background")
     .option("--goal <goal>", "Study goal")
     .option("--welcome <msg>", "Welcome message")
@@ -104,7 +102,7 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
     .option("--tts", "Enable AI text-to-speech")
     .action(async (opts: {
-      title: string; description?: string; background?: string;
+      title: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language: string;
       mode: string; talkMode: string; tts?: boolean
     }) => {
@@ -119,7 +117,6 @@ export function registerInterviewsCommand(program: Command): void {
             ...(opts.tts ? { tts: true } : {}),
           },
         }
-        if (opts.description) body["description"] = opts.description
         if (opts.background) body["background"] = opts.background
         if (opts.goal) body["studyGoal"] = opts.goal
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
@@ -142,7 +139,6 @@ export function registerInterviewsCommand(program: Command): void {
     .command("update <slug>")
     .description("Update an interview")
     .option("-t, --title <title>", "New title")
-    .option("-d, --description <desc>", "New description")
     .option("--background <bg>", "New background")
     .option("--goal <goal>", "New study goal")
     .option("--welcome <msg>", "New welcome message")
@@ -153,7 +149,7 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--tts", "Enable AI text-to-speech")
     .option("--no-tts", "Disable AI text-to-speech")
     .action(async (slug: string, opts: {
-      title?: string; description?: string; background?: string;
+      title?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language?: string;
       mode?: string; talkMode?: string; tts?: boolean
     }) => {
@@ -161,7 +157,6 @@ export function registerInterviewsCommand(program: Command): void {
         const client = getClient()
         const body: Record<string, unknown> = {}
         if (opts.title) body["title"] = opts.title
-        if (opts.description) body["description"] = opts.description
         if (opts.background) body["background"] = opts.background
         if (opts.goal) body["studyGoal"] = opts.goal
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
