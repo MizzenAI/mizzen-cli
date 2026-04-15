@@ -1,5 +1,7 @@
 # Mizzen CLI 命令参考
 
+**注意：命令组都是复数形式** — `interviews`（不是 interview）、`conversations`（不是 conversation）、`insights`（不是 insight）。
+
 ## 认证
 
 ```bash
