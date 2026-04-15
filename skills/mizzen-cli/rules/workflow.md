@@ -104,7 +104,7 @@ S3 [普通] 总结
 
 ```bash
 # 创建访谈
-mizzen interviews create \
+mizzen interview create \
   -t "内部标题" \
   --external-title "对外标题" \
   --background "研究背景" \
@@ -171,7 +171,7 @@ mizzen outline show <slug>
 ## 第九步：发布
 
 ```bash
-mizzen interviews publish <slug>
+mizzen interview publish <slug>
 ```
 
 ## 第十步：生成分享链接
@@ -179,7 +179,7 @@ mizzen interviews publish <slug>
 发布后必须立即执行 `share` 生成受访者参与链接：
 
 ```bash
-mizzen interviews share <slug>
+mizzen interview share <slug>
 ```
 
 将返回的**分享链接**展示给用户，用户把链接发给受访者即可开始访谈。
@@ -221,7 +221,7 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2>
 
 ```bash
 # 第一步：创建访谈
-mizzen interviews create \
+mizzen interview create \
   -t "竞品用户流失分析" \
   --external-title "产品使用体验调研" \
   --background "近3个月用户流失率上升15%，需要了解原因" \
@@ -284,9 +284,9 @@ mizzen outline question add abc123 s4-uuid \
 mizzen outline show abc123
 
 # 第七步：发布
-mizzen interviews publish abc123
+mizzen interview publish abc123
 
 # 第八步：生成分享链接
-mizzen interviews share abc123
+mizzen interview share abc123
 # → 返回分享链接给用户
 ```

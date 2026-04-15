@@ -5,7 +5,7 @@ import { handleError } from "../errors"
 
 export function registerInsightsCommand(program: Command): void {
   const insights = program
-    .command("insights")
+    .command("insight")
     .description("Manage insight reports")
 
   insights

@@ -7,7 +7,7 @@ import type { Conversation, ConversationListResponse, TranscriptResponse, Answer
 
 export function registerConversationsCommand(program: Command): void {
   const conversations = program
-    .command("conversations")
+    .command("conversation")
     .description("Access conversation data")
 
   conversations

@@ -1,7 +1,5 @@
 # Mizzen CLI 命令参考
 
-**注意：命令组都是复数形式** — `interviews`（不是 interview）、`conversations`（不是 conversation）、`insights`（不是 insight）。
-
 ## 认证
 
 ```bash
@@ -16,15 +14,15 @@ mizzen auth clear               # 清除 API Key
 
 ```bash
 # 列表
-mizzen interviews list                          # 所有访谈
-mizzen interviews list --status draft           # 按状态筛选
-mizzen interviews list --search "关键词"         # 按标题搜索
+mizzen interview list                          # 所有访谈
+mizzen interview list --status draft           # 按状态筛选
+mizzen interview list --search "关键词"         # 按标题搜索
 
 # 详情
-mizzen interviews get <slug>
+mizzen interview get <slug>
 
 # 创建
-mizzen interviews create \
+mizzen interview create \
   -t "内部标题（研究者管理用）" \
   --external-title "对外标题（受访者看到的，不传则等于 -t）" \
   --background "研究背景" \
@@ -48,24 +46,24 @@ mizzen interviews create \
 # AI 语音播报：加 --tts 启用
 
 # 修改
-mizzen interviews update <slug> -t "新标题" --goal "新目标"
-mizzen interviews update <slug> --mode video --talk-mode auto --tts
-mizzen interviews update <slug> --external-title "新的对外标题"
+mizzen interview update <slug> -t "新标题" --goal "新目标"
+mizzen interview update <slug> --mode video --talk-mode auto --tts
+mizzen interview update <slug> --external-title "新的对外标题"
 
 # 删除
-mizzen interviews delete <slug>
+mizzen interview delete <slug>
 
 # 发布（draft → active）
-mizzen interviews publish <slug>
+mizzen interview publish <slug>
 
 # 创建分享链接（自动发布，返回受访者参与链接）
-mizzen interviews share <slug>
+mizzen interview share <slug>
 
 # 获取详情（包含管理链接和分享链接）
-mizzen interviews get <slug>
+mizzen interview get <slug>
 
 # 统计
-mizzen interviews stats <slug>
+mizzen interview stats <slug>
 
 # 查看大纲
 mizzen outline show <slug>
@@ -166,28 +164,28 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 
 ```bash
 # 列出访谈的所有对话
-mizzen conversations list <slug>
-mizzen conversations list <slug> --status completed
+mizzen conversation list <slug>
+mizzen conversation list <slug> --status completed
 
 # 查看对话详情（含消息）
-mizzen conversations get <slug> <id>
+mizzen conversation get <slug> <id>
 
 # 获取逐字稿（纯文本）
-mizzen conversations transcript <slug> <id>
+mizzen conversation transcript <slug> <id>
 
 # 获取结构化回答（清洗后数据）
-mizzen conversations answers <slug> <id>
+mizzen conversation answers <slug> <id>
 ```
 
 ## 洞察报告
 
 ```bash
 # 获取最新报告
-mizzen insights get <slug>
+mizzen insight get <slug>
 
 # 触发生成新报告
-mizzen insights generate <slug>
-mizzen insights generate <slug> --include-incomplete
+mizzen insight generate <slug>
+mizzen insight generate <slug> --include-incomplete
 ```
 
 ## 配置
@@ -209,5 +207,5 @@ mizzen config reset                             # 重置为默认
 ```bash
 mizzen --json interviews list     # JSON 输出（适合程序处理）
 mizzen --csv interviews list      # CSV 输出（适合导出）
-mizzen interviews list            # 表格输出（默认，人类可读）
+mizzen interview list            # 表格输出（默认，人类可读）
 ```

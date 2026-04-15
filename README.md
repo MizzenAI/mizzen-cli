@@ -57,10 +57,10 @@ Agent 会按方法论分步引导：理解目标 → 设计大纲 → 确认 →
 
 ```bash
 # 查看访谈列表
-mizzen interviews list
+mizzen interview list
 
 # 创建访谈
-mizzen interviews create -t "产品体验调研" --mode audio
+mizzen interview create -t "产品体验调研" --mode audio
 
 # 查看大纲
 mizzen outline show <slug>
@@ -78,15 +78,15 @@ mizzen outline question add <slug> <section-id> \
   --follow-up none
 
 # 发布并生成分享链接
-mizzen interviews publish <slug>
-mizzen interviews share <slug>
+mizzen interview publish <slug>
+mizzen interview share <slug>
 
 # 查看对话数据
-mizzen conversations list <slug>
-mizzen conversations transcript <slug> 1
+mizzen conversation list <slug>
+mizzen conversation transcript <slug> 1
 
 # 生成洞察报告
-mizzen insights generate <slug>
+mizzen insight generate <slug>
 ```
 
 ---
@@ -122,7 +122,7 @@ mizzen insights generate <slug>
 ```bash
 # 查看帮助
 mizzen --help
-mizzen interviews --help
+mizzen interview --help
 mizzen outline question add --help
 ```
 
