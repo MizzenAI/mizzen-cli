@@ -1,6 +1,8 @@
 import { Command } from "commander"
 import { saveApiKey, loadApiKey, clearApiKey, maskApiKey } from "../auth"
-import { success, error, printKeyValue } from "../output"
+import { ApiError } from "../client"
+import { handleError } from "../errors"
+import { success, printKeyValue } from "../output"
 
 export function registerAuthCommand(program: Command): void {
   const auth = program
@@ -12,8 +14,7 @@ export function registerAuthCommand(program: Command): void {
     .description("Save your API key")
     .action((apiKey: string) => {
       if (!apiKey.startsWith("mk_")) {
-        error("Invalid API key format. Key should start with 'mk_'")
-        process.exit(1)
+        handleError(new ApiError(0, "Invalid API key format. Key should start with 'mk_'"))
       }
 
       saveApiKey(apiKey)
@@ -32,8 +33,7 @@ export function registerAuthCommand(program: Command): void {
           ["Source", process.env["MIZZEN_API_KEY"] ? "MIZZEN_API_KEY env var" : "~/.mizzen/credentials.json"],
         ])
       } else {
-        error("No API key configured. Run: mizzen auth set-key <your-api-key>")
-        process.exit(1)
+        handleError(new ApiError(0, "No API key configured. Run: mizzen auth set-key <your-api-key>"))
       }
     })
 

@@ -1,6 +1,7 @@
 import { Command } from "commander"
 import { getClient } from "../client"
 import { loadConfig } from "../config"
+import { colorStatus } from "../format"
 import { printData, printKeyValue, success } from "../output"
 import { handleError } from "../errors"
 import type { Interview, InterviewListResponse, InterviewStats, OutlineResponse } from "../types/api"
@@ -15,15 +16,6 @@ function getManageUrl(slug: string): string {
 
 function getShareUrl(slug: string): string {
   return `${getSiteUrl()}/interview/${slug}?source=link`
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "active": return `\x1b[32m${status}\x1b[0m`
-    case "draft": return `\x1b[33m${status}\x1b[0m`
-    case "paused": return `\x1b[34m${status}\x1b[0m`
-    default: return status
-  }
 }
 
 export function registerInterviewsCommand(program: Command): void {
@@ -52,7 +44,7 @@ export function registerInterviewsCommand(program: Command): void {
           data.items.map((i) => [
             i.slug,
             i.title || "(untitled)",
-            statusColor(i.status),
+            colorStatus(i.status),
             String(i.participant_count),
             i.created_at?.slice(0, 10) ?? "-",
           ]),

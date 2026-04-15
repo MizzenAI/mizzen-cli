@@ -1,25 +1,9 @@
 import { Command } from "commander"
 import { getClient } from "../client"
+import { colorStatus, formatDuration } from "../format"
 import { printData, printKeyValue, printJson } from "../output"
 import { handleError } from "../errors"
 import type { Conversation, ConversationListResponse, TranscriptResponse, AnswersResponse } from "../types/api"
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "completed": return `\x1b[32m${status}\x1b[0m`
-    case "in_progress": return `\x1b[33m${status}\x1b[0m`
-    case "screened_out": return `\x1b[31m${status}\x1b[0m`
-    case "failed": return `\x1b[31m${status}\x1b[0m`
-    default: return status
-  }
-}
-
-function formatDuration(seconds: number | null): string {
-  if (seconds === null) return "-"
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return m > 0 ? `${m}m ${s}s` : `${s}s`
-}
 
 export function registerConversationsCommand(program: Command): void {
   const conversations = program
@@ -45,7 +29,7 @@ export function registerConversationsCommand(program: Command): void {
           data.items.map((c) => [
             String(c.readable_id),
             c.participant_name || "(anonymous)",
-            statusColor(c.status),
+            colorStatus(c.status),
             formatDuration(c.duration_seconds),
             c.started_at?.slice(0, 16).replace("T", " ") ?? "-",
           ]),
