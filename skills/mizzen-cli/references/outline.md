@@ -1,8 +1,78 @@
-# outline question 题目管理
+# outline 大纲管理
 
-添加、修改、删除、重排题目。这是 CLI 中最复杂的命令组，支持多种题型。
+查看大纲、管理板块、管理题目。
 
-## Recommended Commands
+## outline show — 查看大纲
+
+```bash
+mizzen outline show <slug>
+```
+
+- **创建完题目后必须用这个命令验证**（工作流第七步）
+- **修改前先用这个命令了解当前状态**，不要凭记忆操作
+- 返回的数据包含每个 section 的 `id` 和每个 question 的 `id`，后续修改/删除需要用这些 ID
+- 返回的选择题选项会显示 approve/reject 状态（`+` / `-` 标记）
+
+---
+
+## outline section — 板块管理
+
+### Recommended Commands
+
+```bash
+# 添加普通板块
+mizzen outline section add <slug> -t "核心探索" --type flat
+
+# 添加甄别板块
+mizzen outline section add <slug> -t "基本信息" --type screening
+
+# 添加概念测试板块
+mizzen outline section add <slug> -t "概念测试" --type concept
+
+# 修改板块标题
+mizzen outline section update <slug> <section-id> -t "新标题"
+
+# 删除板块（连同所有题目）
+mizzen outline section delete <slug> <section-id>
+
+# 重新排序板块（按期望顺序传入所有板块 ID）
+mizzen outline section reorder <slug> <uuid1> <uuid2> <uuid3>
+```
+
+### Parameters
+
+#### section add
+
+| 参数 | 必填 | 说明 |
+|------|------|------|
+| `-t, --title <text>` | 是 | 板块标题 |
+| `--type <type>` | 否 | 板块类型：`flat`（普通，默认）/ `screening`（甄别）/ `concept`（概念测试） |
+
+#### section update
+
+| 参数 | 说明 |
+|------|------|
+| `-t, --title <text>` | 新标题 |
+
+#### section reorder
+
+按期望顺序传入**所有**板块的 UUID。
+
+### AI Usage Guidance
+
+- **按方法论顺序添加板块**：甄别（如需要）→ 暖场 → 核心探索（可拆多个）→ 收尾
+- **甄别板块只能有一个**，且必须放在最前面
+- **每个板块 3-5 道题**，核心探索可拆成多个板块
+- **删除板块会连同删除所有题目**，操作前确认
+- **`section_id` 从 `outline show` 或 `section add` 返回值获取**，不要猜测
+
+---
+
+## outline question — 题目管理
+
+这是 CLI 中最复杂的命令组，支持多种题型。
+
+### Recommended Commands
 
 ```bash
 # 添加开放题（深度追问）
@@ -80,9 +150,9 @@ mizzen outline question delete <slug> <question-id>
 mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 ```
 
-## Parameters
+### Parameters
 
-### question add
+#### question add
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
@@ -100,22 +170,15 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 | `--after <uuid>` | 否 | 插入到指定题目之后 |
 | `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数） |
 
-### question update
+#### question update
 
 与 `add` 相同的参数，只传需要修改的字段。`question-id` 从 `outline show` 获取。
 
-### question reorder
+#### question reorder
 
 按期望顺序传入该板块内**所有**题目的 UUID。
 
-## Workflow
-
-1. 确认当前板块的 `section-id`（从 `section add` 返回值或 `outline show` 获取）
-2. 按大纲设计顺序逐题添加
-3. 每添加一题确认返回成功
-4. 全部添加完后用 `outline show <slug>` 验证
-
-## AI Usage Guidance
+### AI Usage Guidance
 
 - **甄别题的 `+/-` 前缀是核心功能**。甄别选项必须在创建时通过 `--options "+通过,-拒绝"` 设置，不需要去网页操作
 - **追问深度选择**：甄别题用 `none`，事实性问题用 `light`，深度探索用 `heavy`。详见 [follow-up.md](../rules/follow-up.md)
@@ -125,14 +188,16 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 - **`question-id` 从 `outline show` 获取**，不要猜测或编造 UUID
 - **`--payload` 是兜底方案**，只在常规参数无法满足需求时使用
 
+---
+
 ## Common Errors
 
 | 错误 | 原因 | 解决 |
 |------|------|------|
-| `Section not found` | section-id 不正确 | 用 `outline show <slug>` 查看正确的 section ID |
-| `Question not found` | question-id 不正确 | 用 `outline show <slug>` 查看正确的 question ID |
+| `Section not found` | section-id 不正确 | 用 `outline show <slug>` 查看正确的 ID |
+| `Question not found` | question-id 不正确 | 用 `outline show <slug>` 查看正确的 ID |
 | `options is required for multiple_choice` | 选择题没传 `--options` | 选择题必须提供选项 |
-| `reorder` 缺少题目 | 没有传入该板块所有题目 ID | reorder 必须包含该板块内所有题目的 UUID |
+| `reorder` 缺少项目 | 没有传入所有 ID | reorder 必须包含所有 UUID |
 
 ## References
 

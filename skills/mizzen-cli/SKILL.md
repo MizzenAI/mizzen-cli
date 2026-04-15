@@ -91,31 +91,10 @@ Interview (slug)
 
 > **重要**：使用命令前，先读取对应的 reference 文件了解参数和注意事项。
 
-### 访谈管理
-
 | 命令 | Reference | 说明 |
 |------|-----------|------|
-| `interview create` | [interview-create.md](references/interview-create.md) | 创建访谈（需先完成方法论设计） |
-| `interview get/list/update/delete/publish/share/stats` | [interview-manage.md](references/interview-manage.md) | 访谈查看、修改、发布、分享 |
-
-### 大纲管理
-
-| 命令 | Reference | 说明 |
-|------|-----------|------|
-| `outline show` | [outline-show.md](references/outline-show.md) | 查看完整大纲 |
-| `outline section add/update/delete/reorder` | [outline-section.md](references/outline-section.md) | 板块增删改排 |
-| `outline question add/update/delete/reorder` | [outline-question.md](references/outline-question.md) | 题目增删改排（最复杂） |
-
-### 数据查看
-
-| 命令 | Reference | 说明 |
-|------|-----------|------|
+| `interview create/get/list/update/delete/publish/share/stats` | [interview.md](references/interview.md) | 访谈创建、查看、修改、发布、分享 |
+| `outline show/section/question` | [outline.md](references/outline.md) | 大纲查看、板块管理、题目管理 |
 | `conversation list/get/transcript/answers` | [conversation.md](references/conversation.md) | 对话列表、详情、逐字稿、结构化回答 |
 | `insight get/generate` | [insight.md](references/insight.md) | 洞察报告获取与生成 |
-
-### 认证与配置
-
-| 命令 | Reference | 说明 |
-|------|-----------|------|
-| `auth set-key/status/clear` | [auth-config.md](references/auth-config.md) | API Key 管理 |
-| `config show/set/reset` | [auth-config.md](references/auth-config.md) | CLI 配置 |
+| `auth/config` | [auth-config.md](references/auth-config.md) | API Key 管理、CLI 配置 |
