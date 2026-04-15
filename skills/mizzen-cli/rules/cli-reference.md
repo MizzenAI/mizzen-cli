@@ -23,8 +23,8 @@ mizzen interviews get <slug>
 
 # 创建
 mizzen interviews create \
-  -t "标题" \
-  --external-title "受访者看到的标题" \
+  -t "内部标题（研究者管理用）" \
+  --external-title "对外标题（受访者看到的，不传则等于 -t）" \
   --background "研究背景" \
   --goal "研究目标" \
   --welcome "欢迎语" \
