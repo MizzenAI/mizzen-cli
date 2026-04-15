@@ -120,13 +120,15 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--no-allow-text", "Disable text input (for submission type)")
     .option("--allow-media", "Allow media upload (for submission type, default: true)")
     .option("--no-allow-media", "Disable media upload (for submission type)")
+    .option("--max-files <n>", "Max files for submission (default: 5)")
+    .option("--accepted-types <types>", "Accepted file types: image,video,document (default: all)")
     .option("--instructions <text>", "Interview guide instructions")
     .option("--after <uuid>", "Insert after this question UUID")
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, sectionId: string, opts: {
       text: string; type: string; followUp?: string; options?: string;
       multiSelect?: boolean; minLabel?: string; maxLabel?: string;
-      allowText?: boolean; allowMedia?: boolean;
+      allowText?: boolean; allowMedia?: boolean; maxFiles?: string; acceptedTypes?: string;
       instructions?: string; after?: string; payload?: string
     }) => {
       try {
@@ -148,10 +150,13 @@ export function registerQuestionsCommand(program: Command): void {
             body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
           }
           if (opts.type === "submission" || opts.allowText !== undefined || opts.allowMedia !== undefined) {
-            body["submissionConfig"] = {
+            const subConfig: Record<string, unknown> = {
               allowText: opts.allowText ?? true,
               allowMedia: opts.allowMedia ?? true,
+              maxFiles: opts.maxFiles ? parseInt(opts.maxFiles, 10) : 5,
+              acceptedTypes: opts.acceptedTypes ? opts.acceptedTypes.split(",").map(t => t.trim()) : ["image", "video", "document"],
             }
+            body["submissionConfig"] = subConfig
           }
           if (opts.instructions) body["addInstructions"] = opts.instructions
           if (opts.after) body["after"] = opts.after

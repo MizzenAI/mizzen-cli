@@ -68,20 +68,23 @@ mizzen questions add <slug> <section-id> \
 **适用场景**：需要受访者提交文件（照片、截图、文档等）或文字证据
 
 **配置**：
-- 默认同时允许文字输入和媒体上传
-- `--no-allow-text` 禁用文字输入（只能上传文件）
-- `--no-allow-media` 禁用文件上传（只能输入文字）
+- `--allow-text` / `--no-allow-text` — 是否允许文字输入（默认允许）
+- `--allow-media` / `--no-allow-media` — 是否允许文件上传（默认允许）
+- `--max-files <n>` — 最大上传文件数（默认 5）
+- `--accepted-types <types>` — 接受的文件类型，逗号分隔：`image,video,document`（默认全部）
 
 **示例**：
 ```bash
-# 只上传图片
+# 只上传图片（禁用文字，只接受图片）
 mizzen questions add <slug> <section-id> \
   --text "请上传你工位的照片" \
   --type submission \
   --no-allow-text \
+  --accepted-types image \
+  --max-files 3 \
   --follow-up none
 
-# 文字 + 文件都允许
+# 文字 + 文件都允许（默认配置）
 mizzen questions add <slug> <section-id> \
   --text "请分享你最近一次不满意的购物体验（可附截图）" \
   --type submission \

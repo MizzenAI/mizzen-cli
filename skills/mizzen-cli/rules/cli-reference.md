@@ -129,6 +129,8 @@ mizzen questions add <slug> <section-id> \
   --text "请上传你工位的照片" \
   --type submission \
   --no-allow-text \
+  --accepted-types image \
+  --max-files 3 \
   --follow-up none
 
 # 添加陈述/过渡语
