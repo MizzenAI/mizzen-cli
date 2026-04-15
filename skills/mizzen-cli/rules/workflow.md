@@ -133,17 +133,32 @@ mizzen outline question add <slug> <section-id> \
 mizzen interviews update <slug> --mode video --talk-mode auto
 ```
 
-## 第七步：验证并发布
+## 第七步：验证大纲
 
 ```bash
 # 检查最终大纲
 mizzen outline show <slug>
+```
 
-# 发布
+## 第八步：测试访谈
+
+发布前请用户先去页面测试访谈效果。展示测试链接：
+
+```
+{site_url}/interview/{slug}/create/edit#questions
+```
+
+提示用户："请点击上方链接，在页面上预览并测试访谈流程。确认没问题后告诉我，我来发布。"
+
+**等待用户测试确认后再继续发布。**
+
+## 第九步：发布
+
+```bash
 mizzen interviews publish <slug>
 ```
 
-## 第八步：生成分享链接
+## 第十步：生成分享链接
 
 发布后必须立即执行 `share` 生成受访者参与链接：
 
