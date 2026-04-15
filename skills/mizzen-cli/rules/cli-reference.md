@@ -124,6 +124,13 @@ mizzen questions add <slug> <section-id> \
   --min-label "非常不满意" \
   --max-label "非常满意"
 
+# 添加上传题（受访者提交文件/图片）
+mizzen questions add <slug> <section-id> \
+  --text "请上传你工位的照片" \
+  --type submission \
+  --no-allow-text \
+  --follow-up none
+
 # 添加陈述/过渡语
 mizzen questions add <slug> <section-id> \
   --text "接下来我们聊聊另一个话题。" \

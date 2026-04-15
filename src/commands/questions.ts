@@ -116,13 +116,18 @@ export function registerQuestionsCommand(program: Command): void {
     .option("--multi-select", "Allow multiple selections (for multiple_choice)")
     .option("--min-label <label>", "Scale min label (for scale type)")
     .option("--max-label <label>", "Scale max label (for scale type)")
+    .option("--allow-text", "Allow text input (for submission type, default: true)")
+    .option("--no-allow-text", "Disable text input (for submission type)")
+    .option("--allow-media", "Allow media upload (for submission type, default: true)")
+    .option("--no-allow-media", "Disable media upload (for submission type)")
     .option("--instructions <text>", "Interview guide instructions")
     .option("--after <uuid>", "Insert after this question UUID")
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, sectionId: string, opts: {
       text: string; type: string; followUp?: string; options?: string;
-      multiSelect?: boolean; minLabel?: string; maxLabel?: string; instructions?: string; after?: string;
-      payload?: string
+      multiSelect?: boolean; minLabel?: string; maxLabel?: string;
+      allowText?: boolean; allowMedia?: boolean;
+      instructions?: string; after?: string; payload?: string
     }) => {
       try {
         const client = getClient()
@@ -141,6 +146,12 @@ export function registerQuestionsCommand(program: Command): void {
           if (opts.multiSelect) body["multiSelect"] = true
           if (opts.minLabel || opts.maxLabel) {
             body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
+          }
+          if (opts.type === "submission" || opts.allowText !== undefined || opts.allowMedia !== undefined) {
+            body["submissionConfig"] = {
+              allowText: opts.allowText ?? true,
+              allowMedia: opts.allowMedia ?? true,
+            }
           }
           if (opts.instructions) body["addInstructions"] = opts.instructions
           if (opts.after) body["after"] = opts.after

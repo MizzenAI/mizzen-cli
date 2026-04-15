@@ -63,6 +63,31 @@ mizzen questions add <slug> <section-id> \
   --max-label "非常满意"
 ```
 
+### submission（上传题）
+
+**适用场景**：需要受访者提交文件（照片、截图、文档等）或文字证据
+
+**配置**：
+- 默认同时允许文字输入和媒体上传
+- `--no-allow-text` 禁用文字输入（只能上传文件）
+- `--no-allow-media` 禁用文件上传（只能输入文字）
+
+**示例**：
+```bash
+# 只上传图片
+mizzen questions add <slug> <section-id> \
+  --text "请上传你工位的照片" \
+  --type submission \
+  --no-allow-text \
+  --follow-up none
+
+# 文字 + 文件都允许
+mizzen questions add <slug> <section-id> \
+  --text "请分享你最近一次不满意的购物体验（可附截图）" \
+  --type submission \
+  --follow-up light
+```
+
 ### statement（陈述 / 过渡语）
 
 **适用场景**：板块之间的过渡衔接，给受访者一个心理准备
