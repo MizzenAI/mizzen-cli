@@ -93,6 +93,7 @@ export function registerInterviewsCommand(program: Command): void {
     .command("create")
     .description("Create a new interview")
     .requiredOption("-t, --title <title>", "Interview title")
+    .option("--external-title <title>", "Title shown to respondents (defaults to --title)")
     .option("--background <bg>", "Research background")
     .option("--goal <goal>", "Study goal")
     .option("--welcome <msg>", "Welcome message")
@@ -102,7 +103,7 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
     .option("--tts", "Enable AI text-to-speech")
     .action(async (opts: {
-      title: string; background?: string;
+      title: string; externalTitle?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language: string;
       mode: string; talkMode: string; tts?: boolean
     }) => {
@@ -117,6 +118,7 @@ export function registerInterviewsCommand(program: Command): void {
             ...(opts.tts ? { tts: true } : {}),
           },
         }
+        if (opts.externalTitle) body["externalTitle"] = opts.externalTitle
         if (opts.background) body["background"] = opts.background
         if (opts.goal) body["studyGoal"] = opts.goal
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
