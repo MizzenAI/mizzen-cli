@@ -76,7 +76,7 @@ Agent 会分步引导你完成整个过程 — 理解目标、设计大纲、确
 | 类别 | 命令 |
 |------|------|
 | 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats` |
-| 📝 大纲管理 | `show`, `add`, `update`, `delete`, `add-section`, `delete-section`, `reorder`, `reorder-sections` |
+| 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder` |
 | 💬 对话数据 | `list`, `get`, `transcript`, `answers` |
 | 📊 洞察报告 | `get`, `generate` |
 | 🔑 认证 | `set-key`, `status`, `clear` |

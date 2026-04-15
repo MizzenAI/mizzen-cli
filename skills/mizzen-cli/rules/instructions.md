@@ -63,7 +63,7 @@ AI 主持人会把这些引导作为追问的主要方向，优先于自由发�
 
 ```bash
 # 条件跳转
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你是否有过网购退货的经历？" \
   --type multiple_choice \
   --options "有,没有" \
@@ -71,7 +71,7 @@ mizzen outline add <slug> <section-id> \
   --instructions "如果用户选择'没有'，跳到 Q6。"
 
 # 追问引导
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你选择这款产品的主要原因是什么？" \
   --type open_ended \
   --follow-up heavy \

@@ -28,6 +28,8 @@ export function registerOutlineCommand(program: Command): void {
     .command("outline")
     .description("Manage study guide outline — sections and questions")
 
+  // ── outline show ─────────────────────────────────────────
+
   outline
     .command("show <slug>")
     .description("Show study guide outline")
@@ -64,11 +66,15 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  // --- Sections ---
+  // ── outline section ──────────────────────────────────────
 
-  outline
-    .command("add-section <slug>")
-    .description("Add a section to the study guide")
+  const section = outline
+    .command("section")
+    .description("Manage sections")
+
+  section
+    .command("add <slug>")
+    .description("Add a section")
     .requiredOption("-t, --title <title>", "Section title")
     .option("--type <type>", "Section type: flat, screening, concept", "flat")
     .option("--description <desc>", "Section description")
@@ -91,8 +97,8 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
-    .command("update-section <slug> <section-id>")
+  section
+    .command("update <slug> <section-id>")
     .description("Update a section")
     .option("-t, --title <title>", "New title")
     .option("--type <type>", "New section type")
@@ -113,8 +119,8 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
-    .command("delete-section <slug> <section-id>")
+  section
+    .command("delete <slug> <section-id>")
     .description("Delete a section and all its questions")
     .action(async (slug: string, sectionId: string) => {
       try {
@@ -126,8 +132,8 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
-    .command("reorder-sections <slug>")
+  section
+    .command("reorder <slug>")
     .description("Reorder sections by UUID list")
     .argument("<uuids...>", "Ordered section UUIDs")
     .action(async (slug: string, uuids: string[]) => {
@@ -141,13 +147,17 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  // --- Questions ---
+  // ── outline question ─────────────────────────────────────
 
-  outline
+  const question = outline
+    .command("question")
+    .description("Manage questions")
+
+  question
     .command("add <slug> <section-id>")
     .description("Add a question to a section")
     .requiredOption("--text <text>", "Question text")
-    .option("--type <type>", "Question type: open_ended, multiple_choice, scale, statement", "open_ended")
+    .option("--type <type>", "Question type: open_ended, multiple_choice, scale, submission, statement", "open_ended")
     .option("--follow-up <level>", "Follow-up: none, light, heavy, auto")
     .option("--options <opts>", "Comma-separated options, use +/- prefix for approve/reject (e.g. +全职,-学生,其他)")
     .option("--multi-select", "Allow multiple selections (for multiple_choice)")
@@ -207,7 +217,7 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
+  question
     .command("update <slug> <question-id>")
     .description("Update a question")
     .option("--text <text>", "New question text")
@@ -251,7 +261,7 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
+  question
     .command("delete <slug> <question-id>")
     .description("Delete a question")
     .action(async (slug: string, questionId: string) => {
@@ -264,7 +274,7 @@ export function registerOutlineCommand(program: Command): void {
       }
     })
 
-  outline
+  question
     .command("reorder <slug> <section-id>")
     .description("Reorder questions within a section by UUID list")
     .argument("<uuids...>", "Ordered question UUIDs")

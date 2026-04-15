@@ -95,20 +95,20 @@
 
 ```bash
 # 甄别题：不追问
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你多久网购一次？" \
   --type multiple_choice \
   --options "每天,每周,每月,很少" \
   --follow-up none
 
 # 暖场题：轻度追问
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你平时喜欢什么休闲活动？" \
   --type open_ended \
   --follow-up light
 
 # 核心题：深度追问
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你上次退掉一个已购买的产品是什么情况？为什么要退？" \
   --type open_ended \
   --follow-up heavy

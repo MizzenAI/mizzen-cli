@@ -73,10 +73,10 @@
 
 ```bash
 # 创建甄别板块
-mizzen outline add-section <slug> -t "基本信息" --type screening
+mizzen outline section add <slug> -t "基本信息" --type screening
 
 # 添加甄别题（用 +/- 前缀标记 approve/reject）
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你目前的职业是？" \
   --type multiple_choice \
   --options "+软件工程师,-医疗保健从业者,-教师,-零售管理人员,-建筑工人,-会计师" \

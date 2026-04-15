@@ -75,61 +75,61 @@ mizzen outline show <slug>
 
 ```bash
 # 添加板块
-mizzen outline add-section <slug> -t "板块标题" --type flat
-mizzen outline add-section <slug> -t "甄别" --type screening
+mizzen outline section add <slug> -t "板块标题" --type flat
+mizzen outline section add <slug> -t "甄别" --type screening
 
 # 板块类型：flat（普通）、screening（甄别）、concept（概念测试）
 
 # 修改板块
-mizzen outline update-section <slug> <section-id> -t "新标题"
+mizzen outline section update <slug> <section-id> -t "新标题"
 
 # 删除板块（连同所有题目）
-mizzen outline delete-section <slug> <section-id>
+mizzen outline section delete <slug> <section-id>
 
 # 重新排序板块
-mizzen outline reorder-sections <slug> <uuid1> <uuid2> <uuid3>
+mizzen outline section reorder <slug> <uuid1> <uuid2> <uuid3>
 ```
 
 ## 题目管理
 
 ```bash
 # 添加开放题
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "题目内容" \
   --type open_ended \
   --follow-up heavy \
   --instructions "追问引导"
 
 # 添加选择题
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "题目内容" \
   --type multiple_choice \
   --options "选项1,选项2,选项3,选项4" \
   --follow-up none
 
 # 添加甄别选择题（+approve / -reject / 无前缀neutral）
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你目前的工作状态是？" \
   --type multiple_choice \
   --options "+全职上班,+兼职,-学生,-退休,-待业" \
   --follow-up none
 
 # 添加多选题（默认单选，加 --multi-select 变多选）
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "你喜欢的品类？（可多选）" \
   --type multiple_choice \
   --options "选项1,选项2,选项3" \
   --multi-select
 
 # 添加量表题
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "题目内容" \
   --type scale \
   --min-label "非常不满意" \
   --max-label "非常满意"
 
 # 添加上传题（受访者提交文件/图片）
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "请上传你工位的照片" \
   --type submission \
   --no-allow-text \
@@ -138,28 +138,28 @@ mizzen outline add <slug> <section-id> \
   --follow-up none
 
 # 添加陈述/过渡语
-mizzen outline add <slug> <section-id> \
+mizzen outline question add <slug> <section-id> \
   --text "接下来我们聊聊另一个话题。" \
   --type statement
 
 # 插入到特定位置（在某题之后）
-mizzen outline add <slug> <section-id> --text "..." --after <question-uuid>
+mizzen outline question add <slug> <section-id> --text "..." --after <question-uuid>
 
 # 修改题目
-mizzen outline update <slug> <question-id> --text "新文本" --follow-up light
+mizzen outline question update <slug> <question-id> --text "新文本" --follow-up light
 
 # 修改选项的甄别状态
-mizzen outline update <slug> <question-id> --options "+通过选项,-拒绝选项,中性选项"
+mizzen outline question update <slug> <question-id> --options "+通过选项,-拒绝选项,中性选项"
 
 # 直接传 JSON body（复杂场景）
-mizzen outline add <slug> <section-id> --payload '{"text":"...","questionType":"multiple_choice","options":[{"text":"选项","status":"approve"}]}'
-mizzen outline update <slug> <question-id> --payload '{"options":[{"text":"选项","status":"reject"}]}'
+mizzen outline question add <slug> <section-id> --payload '{"text":"...","questionType":"multiple_choice","options":[{"text":"选项","status":"approve"}]}'
+mizzen outline question update <slug> <question-id> --payload '{"options":[{"text":"选项","status":"reject"}]}'
 
 # 删除题目
-mizzen outline delete <slug> <question-id>
+mizzen outline question delete <slug> <question-id>
 
 # 重新排序题目
-mizzen outline reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
+mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 ```
 
 ## 对话数据
