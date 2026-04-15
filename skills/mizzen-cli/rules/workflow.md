@@ -75,18 +75,18 @@ mizzen interviews create \
 
 ```bash
 # 按顺序添加板块
-mizzen questions add-section <slug> -t "甄别" --type screening
-mizzen questions add-section <slug> -t "核心探索" --type flat
+mizzen outline add-section <slug> -t "甄别" --type screening
+mizzen outline add-section <slug> -t "核心探索" --type flat
 
 # 添加甄别题（+approve / -reject，直接在 --options 中标记）
-mizzen questions add <slug> <screening-section-id> \
+mizzen outline add <slug> <screening-section-id> \
   --text "你的年龄段是？" \
   --type multiple_choice \
   --options "+18-24,+25-30,+31-35,-36-45,-46以上" \
   --follow-up none
 
 # 添加开放题
-mizzen questions add <slug> <section-id> \
+mizzen outline add <slug> <section-id> \
   --text "题目内容" \
   --type open_ended \
   --follow-up heavy \
@@ -119,7 +119,7 @@ mizzen interviews update <slug> --mode video --talk-mode auto
 
 ```bash
 # 检查最终大纲
-mizzen interviews outline <slug>
+mizzen outline show <slug>
 
 # 发布
 mizzen interviews publish <slug>
@@ -139,18 +139,18 @@ mizzen interviews share <slug>
 
 ```bash
 # 获取当前状态
-mizzen interviews outline <slug>
+mizzen outline show <slug>
 
 # 修改题目
-mizzen questions update <slug> <question-id> --text "新文本"
+mizzen outline update <slug> <question-id> --text "新文本"
 
 # 增删题目
-mizzen questions add <slug> <section-id> --text "..." --after <uuid>
-mizzen questions delete <slug> <question-id>
+mizzen outline add <slug> <section-id> --text "..." --after <uuid>
+mizzen outline delete <slug> <question-id>
 
 # 排序
-mizzen questions reorder-sections <slug> <uuid1> <uuid2> <uuid3>
-mizzen questions reorder <slug> <section-id> <uuid1> <uuid2>
+mizzen outline reorder-sections <slug> <uuid1> <uuid2> <uuid3>
+mizzen outline reorder <slug> <section-id> <uuid1> <uuid2>
 ```
 
 ## 决策指引：什么时候问用户，什么时候自己决定
@@ -183,56 +183,56 @@ mizzen interviews create \
 # → 返回 slug: abc123
 
 # 第二步：添加甄别板块
-mizzen questions add-section abc123 -t "基本信息" --type screening
+mizzen outline add-section abc123 -t "基本信息" --type screening
 # → 返回 section_id: s1-uuid
 
 # 添加甄别题
-mizzen questions add abc123 s1-uuid \
+mizzen outline add abc123 s1-uuid \
   --text "你使用过以下哪款产品？" \
   --type multiple_choice \
   --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
   --follow-up none
 
 # 第三步：添加暖场板块
-mizzen questions add-section abc123 -t "使用背景" --type flat
+mizzen outline add-section abc123 -t "使用背景" --type flat
 # → 返回 section_id: s2-uuid
 
-mizzen questions add abc123 s2-uuid \
+mizzen outline add abc123 s2-uuid \
   --text "你最早是怎么知道这款产品的？大概用了多久？" \
   --type open_ended \
   --follow-up light
 
 # 第四步：添加核心探索板块
-mizzen questions add-section abc123 -t "使用体验" --type flat
+mizzen outline add-section abc123 -t "使用体验" --type flat
 # → 返回 section_id: s3-uuid
 
-mizzen questions add abc123 s3-uuid \
+mizzen outline add abc123 s3-uuid \
   --text "你上次使用这款产品是什么时候？当时在做什么？" \
   --type open_ended \
   --follow-up heavy
 
-mizzen questions add abc123 s3-uuid \
+mizzen outline add abc123 s3-uuid \
   --text "有没有哪个功能或体验让你觉得不满意？能具体说说吗？" \
   --type open_ended \
   --follow-up heavy
 
-mizzen questions add abc123 s3-uuid \
+mizzen outline add abc123 s3-uuid \
   --text "你对产品整体的满意程度？" \
   --type scale \
   --min-label "非常不满意" \
   --max-label "非常满意"
 
 # 第五步：添加收尾板块
-mizzen questions add-section abc123 -t "总结" --type flat
+mizzen outline add-section abc123 -t "总结" --type flat
 # → 返回 section_id: s4-uuid
 
-mizzen questions add abc123 s4-uuid \
+mizzen outline add abc123 s4-uuid \
   --text "如果能改变这款产品的一个地方，你最希望改什么？" \
   --type open_ended \
   --follow-up light
 
 # 第六步：确认大纲
-mizzen interviews outline abc123
+mizzen outline show abc123
 
 # 第七步：发布
 mizzen interviews publish abc123

@@ -63,15 +63,15 @@ mizzen interviews list
 mizzen interviews create -t "产品体验调研" --mode audio
 
 # 查看大纲
-mizzen interviews outline <slug>
+mizzen outline show <slug>
 
 # 添加题目
-mizzen questions add <slug> <section-id> \
+mizzen outline add <slug> <section-id> \
   --text "你上次使用这个产品是什么时候？" \
   --type open_ended --follow-up heavy
 
 # 添加甄别题（+通过 / -筛除）
-mizzen questions add <slug> <section-id> \
+mizzen outline add <slug> <section-id> \
   --text "你的职业是？" \
   --type multiple_choice \
   --options "+软件工程师,-教师,-医生,-会计" \
@@ -110,8 +110,8 @@ mizzen insights generate <slug>
 
 | 类别 | 命令 |
 |------|------|
-| 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats`, `outline` |
-| 📝 题目管理 | `add`, `update`, `delete`, `add-section`, `delete-section`, `reorder`, `reorder-sections` |
+| 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats` |
+| 📝 大纲管理 | `show`, `add`, `update`, `delete`, `add-section`, `delete-section`, `reorder`, `reorder-sections` |
 | 💬 对话数据 | `list`, `get`, `transcript`, `answers` |
 | 📊 洞察报告 | `get`, `generate` |
 | 🔑 认证 | `set-key`, `status`, `clear` |
@@ -123,7 +123,7 @@ mizzen insights generate <slug>
 # 查看帮助
 mizzen --help
 mizzen interviews --help
-mizzen questions add --help
+mizzen outline add --help
 ```
 
 ---

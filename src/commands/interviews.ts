@@ -4,7 +4,7 @@ import { loadConfig } from "../config"
 import { colorStatus } from "../format"
 import { printData, printKeyValue, success } from "../output"
 import { handleError } from "../errors"
-import type { Interview, InterviewListResponse, InterviewStats, OutlineResponse } from "../types/api"
+import type { Interview, InterviewListResponse, InterviewStats } from "../types/api"
 
 function getSiteUrl(): string {
   return loadConfig().api.site_url.replace(/\/$/, "")
@@ -249,39 +249,4 @@ export function registerInterviewsCommand(program: Command): void {
       }
     })
 
-  interviews
-    .command("outline <slug>")
-    .description("Get study guide outline")
-    .action(async (slug: string) => {
-      try {
-        const client = getClient()
-        const data = await client.get<OutlineResponse>(`/interviews/${slug}/outline`)
-
-        const rows: string[][] = []
-        for (const section of data.outline) {
-          rows.push([
-            section.readableId ?? "-",
-            `[${section.sectionType}] ${section.sectionTitle}`,
-            "",
-            "",
-          ])
-          for (const item of section.items) {
-            rows.push([
-              "",
-              item.readableId ?? "-",
-              item.questionType ?? item.itemType,
-              item.text,
-            ])
-          }
-        }
-
-        printData(
-          ["Section", "ID", "Type", "Text"],
-          rows,
-          data,
-        )
-      } catch (err) {
-        handleError(err)
-      }
-    })
 }

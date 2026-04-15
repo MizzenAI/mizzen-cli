@@ -36,7 +36,7 @@ mizzen auth set-key <your-api-key>
 ### 修改访谈
 
 ```
-获取当前大纲 (mizzen interviews outline <slug>) → 理解修改需求 → 通过 CLI 最小化修改
+获取当前大纲 (mizzen outline show <slug>) → 理解修改需求 → 通过 CLI 最小化修改
 ```
 
 详见 [rules/workflow.md](rules/workflow.md)。

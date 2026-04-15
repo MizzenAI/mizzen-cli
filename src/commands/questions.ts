@@ -1,7 +1,8 @@
 import { Command } from "commander"
 import { getClient } from "../client"
-import { success, printJson } from "../output"
+import { success, printJson, printData } from "../output"
 import { handleError } from "../errors"
+import type { OutlineResponse } from "../types/api"
 
 /**
  * Parse options string with +/- prefix for approve/reject status.
@@ -22,14 +23,50 @@ function parseOptions(raw: string): Array<{ text: string; status?: string }> {
   })
 }
 
-export function registerQuestionsCommand(program: Command): void {
-  const questions = program
-    .command("questions")
-    .description("Manage study guide sections and questions")
+export function registerOutlineCommand(program: Command): void {
+  const outline = program
+    .command("outline")
+    .description("Manage study guide outline — sections and questions")
+
+  outline
+    .command("show <slug>")
+    .description("Show study guide outline")
+    .action(async (slug: string) => {
+      try {
+        const client = getClient()
+        const data = await client.get<OutlineResponse>(`/interviews/${slug}/outline`)
+
+        const rows: string[][] = []
+        for (const section of data.outline) {
+          rows.push([
+            section.readableId ?? "-",
+            `[${section.sectionType}] ${section.sectionTitle}`,
+            "",
+            "",
+          ])
+          for (const item of section.items) {
+            rows.push([
+              "",
+              item.readableId ?? "-",
+              item.questionType ?? item.itemType,
+              item.text,
+            ])
+          }
+        }
+
+        printData(
+          ["Section", "ID", "Type", "Text"],
+          rows,
+          data,
+        )
+      } catch (err) {
+        handleError(err)
+      }
+    })
 
   // --- Sections ---
 
-  questions
+  outline
     .command("add-section <slug>")
     .description("Add a section to the study guide")
     .requiredOption("-t, --title <title>", "Section title")
@@ -54,7 +91,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("update-section <slug> <section-id>")
     .description("Update a section")
     .option("-t, --title <title>", "New title")
@@ -76,7 +113,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("delete-section <slug> <section-id>")
     .description("Delete a section and all its questions")
     .action(async (slug: string, sectionId: string) => {
@@ -89,7 +126,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("reorder-sections <slug>")
     .description("Reorder sections by UUID list")
     .argument("<uuids...>", "Ordered section UUIDs")
@@ -106,7 +143,7 @@ export function registerQuestionsCommand(program: Command): void {
 
   // --- Questions ---
 
-  questions
+  outline
     .command("add <slug> <section-id>")
     .description("Add a question to a section")
     .requiredOption("--text <text>", "Question text")
@@ -170,7 +207,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("update <slug> <question-id>")
     .description("Update a question")
     .option("--text <text>", "New question text")
@@ -214,7 +251,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("delete <slug> <question-id>")
     .description("Delete a question")
     .action(async (slug: string, questionId: string) => {
@@ -227,7 +264,7 @@ export function registerQuestionsCommand(program: Command): void {
       }
     })
 
-  questions
+  outline
     .command("reorder <slug> <section-id>")
     .description("Reorder questions within a section by UUID list")
     .argument("<uuids...>", "Ordered question UUIDs")

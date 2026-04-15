@@ -8,7 +8,7 @@ import { registerAuthCommand } from "./commands/auth"
 import { registerConfigCommand } from "./commands/config"
 import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
-import { registerQuestionsCommand } from "./commands/questions"
+import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
 
 function loadVersion(): string {
@@ -50,7 +50,7 @@ function createProgram(): Command {
 
   registerAuthCommand(program)
   registerInterviewsCommand(program)
-  registerQuestionsCommand(program)
+  registerOutlineCommand(program)
   registerConversationsCommand(program)
   registerInsightsCommand(program)
   registerConfigCommand(program)
