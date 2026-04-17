@@ -18,13 +18,13 @@
 
 ```bash
 # 安装 CLI
-npm install -g @mizzen/cli
+npm install -g @mizzenai/cli
 
 # 安装 AI Agent 技能包
 npx skills add MizzenAI/mizzen-cli -g
 
 # 配置 API Key（在 Mizzen 工作区设置中创建）
-mizzen auth set-key <your-api-key>
+mizzen-cli auth set-key <your-api-key>
 ```
 
 <details>
@@ -57,36 +57,36 @@ Agent 会按方法论分步引导：理解目标 → 设计大纲 → 确认 →
 
 ```bash
 # 查看访谈列表
-mizzen interview list
+mizzen-cli interview list
 
 # 创建访谈
-mizzen interview create -t "产品体验调研" --mode audio
+mizzen-cli interview create -t "产品体验调研" --mode audio
 
 # 查看大纲
-mizzen outline show <slug>
+mizzen-cli outline show <slug>
 
 # 添加题目
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你上次使用这个产品是什么时候？" \
   --type open_ended --follow-up heavy
 
 # 添加甄别题（+通过 / -筛除）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你的职业是？" \
   --type multiple_choice \
   --options "+软件工程师,-教师,-医生,-会计" \
   --follow-up none
 
 # 发布并生成分享链接
-mizzen interview publish <slug>
-mizzen interview share <slug>
+mizzen-cli interview publish <slug>
+mizzen-cli interview share <slug>
 
 # 查看对话数据
-mizzen conversation list <slug>
-mizzen conversation transcript <slug> 1
+mizzen-cli conversation list <slug>
+mizzen-cli conversation transcript <slug> 1
 
 # 生成洞察报告
-mizzen insight generate <slug>
+mizzen-cli insight generate <slug>
 ```
 
 ---
@@ -121,9 +121,9 @@ mizzen insight generate <slug>
 
 ```bash
 # 查看帮助
-mizzen --help
-mizzen interview --help
-mizzen outline question add --help
+mizzen-cli --help
+mizzen-cli interview --help
+mizzen-cli outline question add --help
 ```
 
 ---
