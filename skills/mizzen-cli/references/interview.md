@@ -6,7 +6,7 @@
 
 ```bash
 # 创建完整访谈
-mizzen interview create \
+mizzen-cli interview create \
   -t "竞品用户流失分析" \
   --external-title "产品使用体验调研" \
   --background "近3个月用户流失率上升15%，需要了解原因" \
@@ -18,37 +18,37 @@ mizzen interview create \
   --talk-mode manual
 
 # 最简创建（仅标题）
-mizzen interview create -t "饮料偏好调研"
+mizzen-cli interview create -t "饮料偏好调研"
 
 # 列出所有访谈
-mizzen interview list
+mizzen-cli interview list
 
 # 按状态筛选
-mizzen interview list --status draft
-mizzen interview list --status active
+mizzen-cli interview list --status draft
+mizzen-cli interview list --status active
 
 # 搜索访谈
-mizzen interview list --search "饮料"
+mizzen-cli interview list --search "饮料"
 
 # 查看访谈详情（含管理链接和分享链接）
-mizzen interview get <slug>
+mizzen-cli interview get <slug>
 
 # 修改访谈
-mizzen interview update <slug> -t "新标题"
-mizzen interview update <slug> --mode video --talk-mode auto --tts
-mizzen interview update <slug> --external-title "新的对外标题"
+mizzen-cli interview update <slug> -t "新标题"
+mizzen-cli interview update <slug> --mode video --talk-mode auto --tts
+mizzen-cli interview update <slug> --external-title "新的对外标题"
 
 # 删除访谈
-mizzen interview delete <slug>
+mizzen-cli interview delete <slug>
 
 # 发布（draft → active）
-mizzen interview publish <slug>
+mizzen-cli interview publish <slug>
 
 # 创建分享链接（自动发布，返回受访者参与链接）
-mizzen interview share <slug>
+mizzen-cli interview share <slug>
 
 # 查看统计数据
-mizzen interview stats <slug>
+mizzen-cli interview stats <slug>
 ```
 
 ## Parameters
@@ -84,21 +84,21 @@ mizzen interview stats <slug>
 ### 创建访谈
 
 1. 先完成方法论设计（见 [workflow.md](../rules/workflow.md) 第一到四步），大纲和配置都确认后再创建
-2. 执行 `mizzen interview create ...`，记下返回的 **slug**
+2. 执行 `mizzen-cli interview create ...`，记下返回的 **slug**
 3. 用 slug 继续添加板块和题目（见 [outline.md](outline.md)）
 
 ### 发布并分享
 
-1. 确认大纲无误：`mizzen outline show <slug>`
-2. 发布：`mizzen interview publish <slug>`
-3. 生成分享链接：`mizzen interview share <slug>`
+1. 确认大纲无误：`mizzen-cli outline show <slug>`
+2. 发布：`mizzen-cli interview publish <slug>`
+3. 生成分享链接：`mizzen-cli interview share <slug>`
 4. 将分享链接展示给用户
 
 ### 修改访谈
 
-1. 查看当前状态：`mizzen interview get <slug>`
-2. 执行修改：`mizzen interview update <slug> --field "新值"`
-3. 确认修改结果：`mizzen interview get <slug>`
+1. 查看当前状态：`mizzen-cli interview get <slug>`
+2. 执行修改：`mizzen-cli interview update <slug> --field "新值"`
+3. 确认修改结果：`mizzen-cli interview get <slug>`
 
 ## AI Usage Guidance
 
@@ -119,7 +119,7 @@ mizzen interview stats <slug>
 
 | 错误 | 原因 | 解决 |
 |------|------|------|
-| `401 Unauthorized` | API Key 未配置或无效 | 运行 `mizzen auth set-key <key>` |
+| `401 Unauthorized` | API Key 未配置或无效 | 运行 `mizzen-cli auth set-key <key>` |
 | `title is required` | 缺少 `-t` 参数 | 必须传标题 |
 | `Interview not found` | slug 不正确 | 用 `interview list` 查找正确的 slug |
 | `Interview is already active` | 访谈已是 active 状态 | 这不影响重新发布，修改内容后仍需 `publish` 使变更生效 |

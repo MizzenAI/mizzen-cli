@@ -24,7 +24,7 @@
 
 ```bash
 # 安装 CLI + 技能包
-npm install -g @mizzen/cli
+npm install -g @mizzenai/mizzen-cli
 npx skills add MizzenAI/mizzen-cli -g
 ```
 
@@ -41,7 +41,7 @@ npx skills add MizzenAI/mizzen-cli -a cursor -g
 **2. 配置：**
 
 ```bash
-mizzen auth set-key <your-api-key>
+mizzen-cli auth set-key <your-api-key>
 ```
 
 API Key 在 [Mizzen 工作区设置](https://mizzen.chat) 中创建。

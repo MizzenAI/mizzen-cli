@@ -14,7 +14,7 @@
 
 **示例**：
 ```bash
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你上次换手机是什么时候？是什么让你决定换的？" \
   --type open_ended \
   --follow-up heavy
@@ -37,13 +37,13 @@ mizzen outline question add <slug> <section-id> \
 **示例**：
 ```bash
 # 普通单选
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你每天大概花多少时间在手机上？" \
   --type multiple_choice \
   --options "不到1小时,1-3小时,3-5小时,5小时以上"
 
 # 甄别题（+approve / -reject）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的工作状态？" \
   --type multiple_choice \
   --options "+全职上班,+兼职,-学生,-退休,-待业" \
@@ -56,7 +56,7 @@ mizzen outline question add <slug> <section-id> \
 
 **示例**：
 ```bash
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你对目前使用的产品满意吗？" \
   --type scale \
   --min-label "非常不满意" \
@@ -76,7 +76,7 @@ mizzen outline question add <slug> <section-id> \
 **示例**：
 ```bash
 # 只上传图片（禁用文字，只接受图片）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "请上传你工位的照片" \
   --type submission \
   --no-allow-text \
@@ -85,7 +85,7 @@ mizzen outline question add <slug> <section-id> \
   --follow-up none
 
 # 文字 + 文件都允许（默认配置）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "请分享你最近一次不满意的购物体验（可附截图）" \
   --type submission \
   --follow-up light
@@ -102,7 +102,7 @@ mizzen outline question add <slug> <section-id> \
 
 **示例**：
 ```bash
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "接下来我们聊聊你的消费习惯。" \
   --type statement
 ```

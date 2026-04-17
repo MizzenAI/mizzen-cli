@@ -6,13 +6,13 @@
 
 ```bash
 # 获取最新报告
-mizzen insight get <slug>
+mizzen-cli insight get <slug>
 
 # 触发生成新报告
-mizzen insight generate <slug>
+mizzen-cli insight generate <slug>
 
 # 包含未完成对话的报告
-mizzen insight generate <slug> --include-incomplete
+mizzen-cli insight generate <slug> --include-incomplete
 ```
 
 ## Parameters
@@ -32,8 +32,8 @@ mizzen insight generate <slug> --include-incomplete
 
 ## Workflow
 
-1. 先检查是否已有报告：`mizzen insight get <slug>`
-2. 如果没有报告或需要更新：`mizzen insight generate <slug>`
+1. 先检查是否已有报告：`mizzen-cli insight get <slug>`
+2. 如果没有报告或需要更新：`mizzen-cli insight generate <slug>`
 3. 生成是异步的，可能需要等待几分钟
 4. 生成完成后用 `insight get <slug>` 查看结果
 

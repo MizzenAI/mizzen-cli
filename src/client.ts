@@ -11,6 +11,32 @@ export class ApiError extends Error {
   }
 }
 
+export class UpgradeRequiredError extends Error {
+  constructor(currentVersion: string, minVersion: string) {
+    super(
+      `CLI version ${currentVersion} is no longer supported. Minimum required: ${minVersion}\n` +
+      `Run: npm update -g @mizzenai/cli`
+    )
+    this.name = "UpgradeRequiredError"
+  }
+}
+
+let clientVersion = "0.0.0"
+
+export function setClientVersion(version: string): void {
+  clientVersion = version
+}
+
+function compareVersions(a: string, b: string): number {
+  const pa = a.split(".").map(Number)
+  const pb = b.split(".").map(Number)
+  for (let i = 0; i < 3; i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
 export class MizzenClient {
   private readonly baseUrl: string
   private readonly timeout: number
@@ -49,6 +75,11 @@ export class MizzenClient {
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
+    const minVersion = response.headers.get("X-Min-CLI-Version")
+    if (minVersion && compareVersions(clientVersion, minVersion) < 0) {
+      throw new UpgradeRequiredError(clientVersion, minVersion)
+    }
+
     if (!response.ok) {
       let detail = response.statusText
 
@@ -107,7 +138,7 @@ export class MizzenClient {
 
     const apiKey = loadApiKey()
     if (!apiKey) {
-      throw new ApiError(401, "No API key configured. Run: mizzen auth set-key <your-api-key>")
+      throw new ApiError(401, "No API key configured. Run: mizzen-cli auth set-key <your-api-key>")
     }
 
     const url = this.buildUrl(path, params)

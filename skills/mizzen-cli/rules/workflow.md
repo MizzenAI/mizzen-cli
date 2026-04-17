@@ -104,7 +104,7 @@ S3 [普通] 总结
 
 ```bash
 # 创建访谈
-mizzen interview create \
+mizzen-cli interview create \
   -t "内部标题" \
   --external-title "对外标题" \
   --background "研究背景" \
@@ -129,18 +129,18 @@ mizzen interview create \
 
 ```bash
 # 按顺序添加板块
-mizzen outline section add <slug> -t "甄别" --type screening
-mizzen outline section add <slug> -t "核心探索" --type flat
+mizzen-cli outline section add <slug> -t "甄别" --type screening
+mizzen-cli outline section add <slug> -t "核心探索" --type flat
 
 # 添加甄别题（+approve / -reject，直接在 --options 中标记）
-mizzen outline question add <slug> <screening-section-id> \
+mizzen-cli outline question add <slug> <screening-section-id> \
   --text "你的年龄段是？" \
   --type multiple_choice \
   --options "+18-24,+25-30,+31-35,-36-45,-46以上" \
   --follow-up none
 
 # 添加开放题
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "题目内容" \
   --type open_ended \
   --follow-up heavy \
@@ -153,7 +153,7 @@ mizzen outline question add <slug> <section-id> \
 
 ```bash
 # 检查最终大纲
-mizzen outline show <slug>
+mizzen-cli outline show <slug>
 ```
 
 ## 第八步：测试访谈
@@ -171,7 +171,7 @@ mizzen outline show <slug>
 ## 第九步：发布
 
 ```bash
-mizzen interview publish <slug>
+mizzen-cli interview publish <slug>
 ```
 
 ## 第十步：生成分享链接
@@ -179,7 +179,7 @@ mizzen interview publish <slug>
 发布后必须立即执行 `share` 生成受访者参与链接：
 
 ```bash
-mizzen interview share <slug>
+mizzen-cli interview share <slug>
 ```
 
 将返回的**分享链接**展示给用户，用户把链接发给受访者即可开始访谈。
@@ -188,18 +188,18 @@ mizzen interview share <slug>
 
 ```bash
 # 获取当前状态
-mizzen outline show <slug>
+mizzen-cli outline show <slug>
 
 # 修改题目
-mizzen outline question update <slug> <question-id> --text "新文本"
+mizzen-cli outline question update <slug> <question-id> --text "新文本"
 
 # 增删题目
-mizzen outline question add <slug> <section-id> --text "..." --after <uuid>
-mizzen outline question delete <slug> <question-id>
+mizzen-cli outline question add <slug> <section-id> --text "..." --after <uuid>
+mizzen-cli outline question delete <slug> <question-id>
 
 # 排序
-mizzen outline section reorder <slug> <uuid1> <uuid2> <uuid3>
-mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2>
+mizzen-cli outline section reorder <slug> <uuid1> <uuid2> <uuid3>
+mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2>
 ```
 
 ## 决策指引：什么时候问用户，什么时候自己决定
@@ -221,7 +221,7 @@ mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2>
 
 ```bash
 # 第一步：创建访谈
-mizzen interview create \
+mizzen-cli interview create \
   -t "竞品用户流失分析" \
   --external-title "产品使用体验调研" \
   --background "近3个月用户流失率上升15%，需要了解原因" \
@@ -232,61 +232,61 @@ mizzen interview create \
 # → 返回 slug: abc123
 
 # 第二步：添加甄别板块
-mizzen outline section add abc123 -t "基本信息" --type screening
+mizzen-cli outline section add abc123 -t "基本信息" --type screening
 # → 返回 section_id: s1-uuid
 
 # 添加甄别题
-mizzen outline question add abc123 s1-uuid \
+mizzen-cli outline question add abc123 s1-uuid \
   --text "你使用过以下哪款产品？" \
   --type multiple_choice \
   --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
   --follow-up none
 
 # 第三步：添加暖场板块
-mizzen outline section add abc123 -t "使用背景" --type flat
+mizzen-cli outline section add abc123 -t "使用背景" --type flat
 # → 返回 section_id: s2-uuid
 
-mizzen outline question add abc123 s2-uuid \
+mizzen-cli outline question add abc123 s2-uuid \
   --text "你最早是怎么知道这款产品的？大概用了多久？" \
   --type open_ended \
   --follow-up light
 
 # 第四步：添加核心探索板块
-mizzen outline section add abc123 -t "使用体验" --type flat
+mizzen-cli outline section add abc123 -t "使用体验" --type flat
 # → 返回 section_id: s3-uuid
 
-mizzen outline question add abc123 s3-uuid \
+mizzen-cli outline question add abc123 s3-uuid \
   --text "你上次使用这款产品是什么时候？当时在做什么？" \
   --type open_ended \
   --follow-up heavy
 
-mizzen outline question add abc123 s3-uuid \
+mizzen-cli outline question add abc123 s3-uuid \
   --text "有没有哪个功能或体验让你觉得不满意？能具体说说吗？" \
   --type open_ended \
   --follow-up heavy
 
-mizzen outline question add abc123 s3-uuid \
+mizzen-cli outline question add abc123 s3-uuid \
   --text "你对产品整体的满意程度？" \
   --type scale \
   --min-label "非常不满意" \
   --max-label "非常满意"
 
 # 第五步：添加收尾板块
-mizzen outline section add abc123 -t "总结" --type flat
+mizzen-cli outline section add abc123 -t "总结" --type flat
 # → 返回 section_id: s4-uuid
 
-mizzen outline question add abc123 s4-uuid \
+mizzen-cli outline question add abc123 s4-uuid \
   --text "如果能改变这款产品的一个地方，你最希望改什么？" \
   --type open_ended \
   --follow-up light
 
 # 第六步：确认大纲
-mizzen outline show abc123
+mizzen-cli outline show abc123
 
 # 第七步：发布
-mizzen interview publish abc123
+mizzen-cli interview publish abc123
 
 # 第八步：生成分享链接
-mizzen interview share abc123
+mizzen-cli interview share abc123
 # → 返回分享链接给用户
 ```

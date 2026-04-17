@@ -33,7 +33,7 @@ export function registerAuthCommand(program: Command): void {
           ["Source", process.env["MIZZEN_API_KEY"] ? "MIZZEN_API_KEY env var" : "~/.mizzen/credentials.json"],
         ])
       } else {
-        handleError(new ApiError(0, "No API key configured. Run: mizzen auth set-key <your-api-key>"))
+        handleError(new ApiError(0, "No API key configured. Run: mizzen-cli auth set-key <your-api-key>"))
       }
     })
 

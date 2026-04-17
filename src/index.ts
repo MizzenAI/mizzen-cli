@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs"
 import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { setOutputFormat } from "./output"
+import { setClientVersion } from "./client"
 import { isConfigured, maskApiKey, loadApiKey } from "./auth"
 import { registerAuthCommand } from "./commands/auth"
 import { registerConfigCommand } from "./commands/config"
@@ -24,7 +25,7 @@ function loadVersion(): string {
 
 function buildStatusLine(): string {
   if (!isConfigured()) {
-    return "Not configured. Run: mizzen auth set-key <your-api-key>"
+    return "Not configured. Run: mizzen-cli auth set-key <your-api-key>"
   }
   const key = loadApiKey()
   return key ? `Authenticated (${maskApiKey(key)})` : "Not configured"
@@ -32,9 +33,10 @@ function buildStatusLine(): string {
 
 function createProgram(): Command {
   const version = loadVersion()
+  setClientVersion(version)
 
   const program = new Command()
-    .name("mizzen")
+    .name("mizzen-cli")
     .description(`Mizzen CLI — Manage interviews, study guides and conversation data\n\n  ${buildStatusLine()}`)
     .version(version, "-v, --version")
     .option("--json", "Output in JSON format")

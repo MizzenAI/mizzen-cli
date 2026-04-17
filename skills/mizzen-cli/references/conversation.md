@@ -6,19 +6,19 @@
 
 ```bash
 # 列出访谈的所有对话
-mizzen conversation list <slug>
+mizzen-cli conversation list <slug>
 
 # 按状态筛选（completed / in_progress / screened_out / failed）
-mizzen conversation list <slug> --status completed
+mizzen-cli conversation list <slug> --status completed
 
 # 查看对话详情（含消息列表）
-mizzen conversation get <slug> <id>
+mizzen-cli conversation get <slug> <id>
 
 # 获取逐字稿（纯文本格式）
-mizzen conversation transcript <slug> <id>
+mizzen-cli conversation transcript <slug> <id>
 
 # 获取结构化回答（清洗后数据）
-mizzen conversation answers <slug> <id>
+mizzen-cli conversation answers <slug> <id>
 ```
 
 ## Parameters
@@ -43,17 +43,17 @@ mizzen conversation answers <slug> <id>
 
 ### 查看访谈数据
 
-1. 先列出对话：`mizzen conversation list <slug>`
+1. 先列出对话：`mizzen-cli conversation list <slug>`
 2. 找到目标对话的 `readable_id`（#列的数字）
 3. 根据需要选择查看方式：
-   - 查看详情和消息：`mizzen conversation get <slug> <id>`
-   - 获取纯文本逐字稿：`mizzen conversation transcript <slug> <id>`
-   - 获取结构化数据：`mizzen conversation answers <slug> <id>`
+   - 查看详情和消息：`mizzen-cli conversation get <slug> <id>`
+   - 获取纯文本逐字稿：`mizzen-cli conversation transcript <slug> <id>`
+   - 获取结构化数据：`mizzen-cli conversation answers <slug> <id>`
 
 ### 批量分析
 
-1. 列出已完成对话：`mizzen conversation list <slug> --status completed`
-2. 逐个获取结构化回答：`mizzen conversation answers <slug> <id>`
+1. 列出已完成对话：`mizzen-cli conversation list <slug> --status completed`
+2. 逐个获取结构化回答：`mizzen-cli conversation answers <slug> <id>`
 3. 汇总分析
 
 ## AI Usage Guidance

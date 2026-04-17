@@ -5,7 +5,7 @@
 ## outline show — 查看大纲
 
 ```bash
-mizzen outline show <slug>
+mizzen-cli outline show <slug>
 ```
 
 - **创建完题目后必须用这个命令验证**（工作流第七步）
@@ -21,22 +21,22 @@ mizzen outline show <slug>
 
 ```bash
 # 添加普通板块
-mizzen outline section add <slug> -t "核心探索" --type flat
+mizzen-cli outline section add <slug> -t "核心探索" --type flat
 
 # 添加甄别板块
-mizzen outline section add <slug> -t "基本信息" --type screening
+mizzen-cli outline section add <slug> -t "基本信息" --type screening
 
 # 添加概念测试板块
-mizzen outline section add <slug> -t "概念测试" --type concept
+mizzen-cli outline section add <slug> -t "概念测试" --type concept
 
 # 修改板块标题
-mizzen outline section update <slug> <section-id> -t "新标题"
+mizzen-cli outline section update <slug> <section-id> -t "新标题"
 
 # 删除板块（连同所有题目）
-mizzen outline section delete <slug> <section-id>
+mizzen-cli outline section delete <slug> <section-id>
 
 # 重新排序板块（按期望顺序传入所有板块 ID）
-mizzen outline section reorder <slug> <uuid1> <uuid2> <uuid3>
+mizzen-cli outline section reorder <slug> <uuid1> <uuid2> <uuid3>
 ```
 
 ### Parameters
@@ -76,42 +76,42 @@ mizzen outline section reorder <slug> <uuid1> <uuid2> <uuid3>
 
 ```bash
 # 添加开放题（深度追问）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你上次使用这款产品是什么时候？当时在做什么？" \
   --type open_ended \
   --follow-up heavy \
   --instructions "追问具体的使用场景和遇到的问题"
 
 # 添加选择题（单选）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的工作状态是？" \
   --type multiple_choice \
   --options "全职上班,兼职,自由职业,学生,退休" \
   --follow-up none
 
 # 添加甄别选择题（+approve / -reject）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你使用过以下哪款产品？" \
   --type multiple_choice \
   --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
   --follow-up none
 
 # 添加多选题
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你喜欢的品类？（可多选）" \
   --type multiple_choice \
   --options "咖啡,奶茶,果汁,碳酸饮料,纯净水" \
   --multi-select
 
 # 添加量表题
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "你对产品整体的满意程度？" \
   --type scale \
   --min-label "非常不满意" \
   --max-label "非常满意"
 
 # 添加上传题
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "请上传你工位的照片" \
   --type submission \
   --no-allow-text \
@@ -120,34 +120,34 @@ mizzen outline question add <slug> <section-id> \
   --follow-up none
 
 # 添加陈述/过渡语
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "接下来我们聊聊另一个话题。" \
   --type statement
 
 # 插入到特定位置（在某题之后）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --text "补充问题" \
   --type open_ended \
   --after <question-uuid>
 
 # 修改题目
-mizzen outline question update <slug> <question-id> \
+mizzen-cli outline question update <slug> <question-id> \
   --text "新的题目文本" \
   --follow-up light
 
 # 修改选项的甄别状态
-mizzen outline question update <slug> <question-id> \
+mizzen-cli outline question update <slug> <question-id> \
   --options "+通过选项,-拒绝选项,中性选项"
 
 # 直接传 JSON body（复杂场景）
-mizzen outline question add <slug> <section-id> \
+mizzen-cli outline question add <slug> <section-id> \
   --payload '{"text":"...","questionType":"multiple_choice","options":[{"text":"选项","status":"approve"}]}'
 
 # 删除题目
-mizzen outline question delete <slug> <question-id>
+mizzen-cli outline question delete <slug> <question-id>
 
 # 重新排序题目
-mizzen outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
+mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 ```
 
 ### Parameters

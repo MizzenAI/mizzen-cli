@@ -1,10 +1,10 @@
 {
-  "name": "@mizzen/cli",
-  "version": "0.1.0",
+  "name": "@mizzenai/cli",
+  "version": "0.1.1",
   "description": "Mizzen CLI — manage interviews, study guides and conversation data from the command line",
   "type": "module",
   "bin": {
-    "mizzen": "dist/index.js"
+    "mizzen-cli": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [

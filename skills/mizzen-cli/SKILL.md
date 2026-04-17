@@ -11,7 +11,7 @@ description: |
 
 通过 Mizzen CLI 设计和管理用户研究访谈。本 skill 包含访谈设计方法论和 CLI 使用指南。
 
-**CRITICAL — 使用任何 CLI 命令前，必须先确认认证状态：`mizzen auth status`**
+**CRITICAL — 使用任何 CLI 命令前，必须先确认认证状态：`mizzen-cli auth status`**
 
 ## Core Concepts
 

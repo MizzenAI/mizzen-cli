@@ -4,7 +4,7 @@ import { error } from "./output"
 export function handleError(err: unknown): never {
   if (err instanceof ApiError) {
     if (err.status === 401) {
-      error(`${err.detail}\n  Run: mizzen auth set-key <your-api-key>`)
+      error(`${err.detail}\n  Run: mizzen-cli auth set-key <your-api-key>`)
     } else if (err.status === 0) {
       error(err.detail)
     } else {
