@@ -134,13 +134,19 @@ mizzen-cli outline question add --help
 
 ```
 skills/mizzen-cli/
-  SKILL.md                      # 入口：核心原则 + 规则索引
-  rules/workflow.md             # 分步创建工作流
-  rules/question-design.md      # 题型选择与写作规范
-  rules/screening.md            # 甄别题设计与意图伪装
-  rules/follow-up.md            # 追问深度策略
-  rules/instructions.md         # 条件逻辑与追问引导
-  rules/cli-reference.md        # 完整 CLI 命令参考
+  SKILL.md                           # 入口：核心原则 + 规则索引
+  rules/
+    workflow.md                      # 分步创建工作流
+    question-design.md               # 题型选择与写作规范
+    screening.md                     # 甄别题设计与意图伪装
+    follow-up.md                     # 追问深度策略
+    instructions.md                  # 条件逻辑与追问引导
+  references/
+    interview.md                     # 访谈管理 CLI 命令参考
+    outline.md                       # 大纲/题目 CLI 命令参考
+    conversation.md                  # 对话数据 CLI 命令参考
+    insight.md                       # 洞察报告 CLI 命令参考
+    auth-config.md                   # 认证与配置 CLI 命令参考
 ```
 
 ---
