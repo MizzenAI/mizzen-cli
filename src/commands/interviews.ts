@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import { getClient } from "../client"
 import { loadConfig } from "../config"
-import { colorStatus } from "../format"
+import { colorStatus, formatDuration } from "../format"
 import { printData, printKeyValue, success } from "../output"
 import { handleError } from "../errors"
 import type { Interview, InterviewListResponse, InterviewStats } from "../types/api"
@@ -241,8 +241,8 @@ export function registerInterviewsCommand(program: Command): void {
           ["Failed", String(data.failed)],
           ["Timed Out", String(data.timed_out)],
           ["Completion Rate", `${(data.completion_rate * 100).toFixed(1)}%`],
-          ["Avg Duration", data.avg_duration_seconds ? `${Math.round(data.avg_duration_seconds)}s` : "-"],
-          ["Median Duration", data.median_duration_seconds ? `${Math.round(data.median_duration_seconds)}s` : "-"],
+          ["Avg Active Time", data.avg_duration_seconds ? formatDuration(Math.round(data.avg_duration_seconds)) : "-"],
+          ["Median Active Time", data.median_duration_seconds ? formatDuration(Math.round(data.median_duration_seconds)) : "-"],
         ])
       } catch (err) {
         handleError(err)
