@@ -48,6 +48,7 @@ export interface Conversation {
   started_at: string | null
   ended_at: string | null
   duration_seconds: number | null
+  active_time_seconds: number | null
   has_cleaned_data?: boolean
   messages?: Message[]
 }

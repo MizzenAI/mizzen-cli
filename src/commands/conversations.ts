@@ -25,12 +25,12 @@ export function registerConversationsCommand(program: Command): void {
         const data = await client.get<ConversationListResponse>(`/interviews/${slug}/conversations`, params)
 
         printData(
-          ["#", "Participant", "Status", "Duration", "Started"],
+          ["#", "Participant", "Status", "Active Time", "Started"],
           data.items.map((c) => [
             String(c.readable_id),
             c.participant_name || "(anonymous)",
             colorStatus(c.status),
-            formatDuration(c.duration_seconds),
+            formatDuration(c.active_time_seconds ?? c.duration_seconds),
             c.started_at?.slice(0, 16).replace("T", " ") ?? "-",
           ]),
           data,
@@ -52,6 +52,7 @@ export function registerConversationsCommand(program: Command): void {
           ["#", String(data.readable_id)],
           ["Participant", data.participant_name || "(anonymous)"],
           ["Status", data.status],
+          ["Active Time", formatDuration(data.active_time_seconds ?? data.duration_seconds)],
           ["Duration", formatDuration(data.duration_seconds)],
           ["Started", data.started_at?.slice(0, 16).replace("T", " ") ?? "-"],
           ["Ended", data.ended_at?.slice(0, 16).replace("T", " ") ?? "-"],
