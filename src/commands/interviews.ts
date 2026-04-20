@@ -241,8 +241,8 @@ export function registerInterviewsCommand(program: Command): void {
           ["Failed", String(data.failed)],
           ["Timed Out", String(data.timed_out)],
           ["Completion Rate", `${(data.completion_rate * 100).toFixed(1)}%`],
-          ["Avg Active Time", data.avg_duration_seconds ? formatDuration(Math.round(data.avg_duration_seconds)) : "-"],
-          ["Median Active Time", data.median_duration_seconds ? formatDuration(Math.round(data.median_duration_seconds)) : "-"],
+          ["Avg Active Time", data.avg_active_time_seconds ? formatDuration(Math.round(data.avg_active_time_seconds)) : "-"],
+          ["Median Active Time", data.median_active_time_seconds ? formatDuration(Math.round(data.median_active_time_seconds)) : "-"],
         ])
       } catch (err) {
         handleError(err)

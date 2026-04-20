@@ -86,8 +86,8 @@ export interface InterviewStats {
   failed: number
   timed_out: number
   completion_rate: number
-  avg_duration_seconds: number | null
-  median_duration_seconds: number | null
+  avg_active_time_seconds: number | null
+  median_active_time_seconds: number | null
 }
 
 export interface InsightResponse {
