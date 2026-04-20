@@ -53,7 +53,6 @@ export function registerConversationsCommand(program: Command): void {
           ["Participant", data.participant_name || "(anonymous)"],
           ["Status", data.status],
           ["Active Time", formatDuration(data.active_time_seconds ?? data.duration_seconds)],
-          ["Duration", formatDuration(data.duration_seconds)],
           ["Started", data.started_at?.slice(0, 16).replace("T", " ") ?? "-"],
           ["Ended", data.ended_at?.slice(0, 16).replace("T", " ") ?? "-"],
           ["Messages", String(data.messages?.length ?? 0)],
