@@ -288,7 +288,7 @@ export function registerInterviewsCommand(program: Command): void {
 
   interviews
     .command("share <slug>")
-    .description("Create share link for respondents (auto-publishes if draft)")
+    .description("Create share link for respondents (interview must be published first)")
     .action(async (slug: string) => {
       try {
         const client = getClient()
