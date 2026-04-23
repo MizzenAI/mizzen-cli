@@ -41,7 +41,10 @@ mizzen-cli interview update <slug> --external-title "新的对外标题"
 # 删除访谈
 mizzen-cli interview delete <slug>
 
-# 发布（draft → active）
+# 运行质量检查
+mizzen-cli interview check <slug>
+
+# 发布（draft → active，内部会先自动运行 check）
 mizzen-cli interview publish <slug>
 
 # 创建分享链接（自动发布，返回受访者参与链接）
@@ -90,9 +93,10 @@ mizzen-cli interview stats <slug>
 ### 发布并分享
 
 1. 确认大纲无误：`mizzen-cli outline show <slug>`
-2. 发布：`mizzen-cli interview publish <slug>`
-3. 生成分享链接：`mizzen-cli interview share <slug>`
-4. 将分享链接展示给用户
+2. 运行质量检查：`mizzen-cli interview check <slug>`（publish 也会自动运行）
+3. 发布：`mizzen-cli interview publish <slug>`
+4. 生成分享链接：`mizzen-cli interview share <slug>`
+5. 将分享链接展示给用户
 
 ### 修改访谈
 

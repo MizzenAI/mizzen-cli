@@ -168,11 +168,19 @@ mizzen-cli outline show <slug>
 
 **等待用户测试确认后再继续发布。**
 
-## 第九步：发布
+## 第九步：质量检查 & 发布
+
+发布前必须先运行 study check，确认无 error 后再发布：
 
 ```bash
+# 运行质量检查（publish 会自动执行，也可单独运行）
+mizzen-cli interview check <slug>
+
+# 发布（内部会先自动运行 check，有 error 会拒绝）
 mizzen-cli interview publish <slug>
 ```
+
+如果 check 报告 error，必须先修复问题再发布。warning 和 recommendation 不阻止发布。
 
 ## 第十步：生成分享链接
 
@@ -283,7 +291,8 @@ mizzen-cli outline question add abc123 s4-uuid \
 # 第六步：确认大纲
 mizzen-cli outline show abc123
 
-# 第七步：发布
+# 第七步：质量检查 & 发布
+mizzen-cli interview check abc123
 mizzen-cli interview publish abc123
 
 # 第八步：生成分享链接

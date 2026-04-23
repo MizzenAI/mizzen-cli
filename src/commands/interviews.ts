@@ -190,11 +190,90 @@ export function registerInterviewsCommand(program: Command): void {
     })
 
   interviews
+    .command("check <slug>")
+    .description("Run study check for an interview")
+    .action(async (slug: string) => {
+      try {
+        const client = getClient()
+        process.stdout.write("Running study check... ")
+        const check = await client.post<{
+          success: boolean
+          cached: boolean
+          issues: Array<{ severity: string; short_description: string; issue_details: string }>
+          error_count: number
+          warning_count: number
+        }>(`/interviews/${slug}/check`)
+
+        const errors = check.issues.filter(i => i.severity === "error")
+        const warnings = check.issues.filter(i => i.severity === "warning")
+        const recommendations = check.issues.filter(i => i.severity === "recommendation")
+
+        if (errors.length > 0) {
+          console.log(`\n✗ ${errors.length} error(s):`)
+          for (const issue of errors) {
+            console.log(`  • ${issue.short_description}`)
+            console.log(`    ${issue.issue_details}\n`)
+          }
+        } else {
+          console.log("✓ No errors")
+        }
+
+        if (warnings.length > 0) {
+          console.log(`⚠ ${warnings.length} warning(s):`)
+          for (const issue of warnings) {
+            console.log(`  • ${issue.short_description}`)
+          }
+        }
+
+        if (recommendations.length > 0) {
+          console.log(`ℹ ${recommendations.length} recommendation(s):`)
+          for (const issue of recommendations) {
+            console.log(`  • ${issue.short_description}`)
+          }
+        }
+
+        if (check.cached) {
+          console.log("\n(cached result)")
+        }
+
+        if (errors.length > 0) process.exit(1)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  interviews
     .command("publish <slug>")
     .description("Publish a draft interview")
     .action(async (slug: string) => {
       try {
         const client = getClient()
+
+        // Step 1: Run study check
+        process.stdout.write("Running study check... ")
+        const check = await client.post<{
+          success: boolean
+          cached: boolean
+          issues: Array<{ severity: string; short_description: string; issue_details: string }>
+          error_count: number
+          warning_count: number
+        }>(`/interviews/${slug}/check`)
+
+        if (check.error_count > 0) {
+          console.log(`\n✗ Study check found ${check.error_count} error(s):`)
+          for (const issue of check.issues.filter(i => i.severity === "error")) {
+            console.log(`  • ${issue.short_description}`)
+            console.log(`    ${issue.issue_details}\n`)
+          }
+          process.exit(1)
+        }
+
+        const warnings = check.warning_count
+        console.log(
+          `✓ Passed${warnings > 0 ? ` (${warnings} warning${warnings > 1 ? "s" : ""})` : ""}`
+        )
+
+        // Step 2: Publish
         await client.post(`/interviews/${slug}/publish`)
         success(`Interview ${slug} published`)
         printKeyValue([
