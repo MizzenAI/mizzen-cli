@@ -3,7 +3,8 @@ name: mizzen-cli
 description: |
   AI 访谈设计与管理技能。通过 Mizzen CLI 创建和管理用户研究访谈。
   触发词: create interview, design study guide, user research, user interview, 用户访谈, 访谈设计,
-  study guide, 调研, 创建访谈, 设计大纲, research interview, screener design.
+  study guide, 调研, 创建访谈, 设计大纲, research interview, screener design,
+  采访, 问卷, 做个调研, 做个访谈, 出几道题, 设计问卷, 做用研, 出题, 设计几个问题.
   核心能力: 访谈创建、大纲设计、题目设计、甄别筛选、对话数据获取。
 ---
 
