@@ -156,9 +156,17 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline show <slug>
 ```
 
-## 第八步：测试访谈
+## 第八步：质量检查
 
-发布前强烈建议用户先去页面测试访谈效果。展示测试链接：
+```bash
+mizzen-cli interview check <slug>
+```
+
+如果 check 报告 error，必须先修复问题再继续。warning 和 recommendation 不阻止发布。
+
+## 第九步：测试访谈
+
+质量检查通过后，强烈建议用户先去页面测试访谈效果。展示测试链接：
 
 ```
 {site_url}/interview/{slug}/create/edit#questions
@@ -166,23 +174,16 @@ mizzen-cli outline show <slug>
 
 对用户说："建议先点击上方链接，在页面上预览并测试访谈流程。确认没问题后告诉我，我来发布。如果不需要测试，也可以直接告诉我发布。"
 
-**如果用户明确表示不需要测试（如"直接发布"、"跳过测试"），可以直接进入第九步。否则应等待用户测试确认后再继续。**
+**如果用户明确表示不需要测试（如"直接发布"、"跳过测试"），可以直接进入第十步。否则应等待用户测试确认后再继续。**
 
-## 第九步：质量检查 & 发布
-
-发布前必须先运行 study check，确认无 error 后再发布：
+## 第十步：发布
 
 ```bash
-# 运行质量检查（publish 会自动执行，也可单独运行）
-mizzen-cli interview check <slug>
-
-# 发布（内部会先自动运行 check，有 error 会拒绝）
+# publish 内部会再次运行 check，有 error 会拒绝
 mizzen-cli interview publish <slug>
 ```
 
-如果 check 报告 error，必须先修复问题再发布。warning 和 recommendation 不阻止发布。
-
-## 第十步：生成分享链接
+## 第十一步：生成分享链接
 
 发布后必须立即执行 `share` 生成受访者参与链接：
 
@@ -291,11 +292,15 @@ mizzen-cli outline question add abc123 s4-uuid \
 # 第六步：确认大纲
 mizzen-cli outline show abc123
 
-# 第七步：质量检查 & 发布
+# 第七步：质量检查
 mizzen-cli interview check abc123
+
+# 第八步：建议用户测试（展示测试链接）
+
+# 第九步：发布
 mizzen-cli interview publish abc123
 
-# 第八步：生成分享链接
+# 第十步：生成分享链接
 mizzen-cli interview share abc123
 # → 返回分享链接给用户
 ```
