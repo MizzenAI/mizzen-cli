@@ -192,7 +192,8 @@ export function registerInterviewsCommand(program: Command): void {
   interviews
     .command("check <slug>")
     .description("Run study check for an interview")
-    .action(async (slug: string) => {
+    .option("--lang <language>", "Output language (zh, en)", "zh")
+    .action(async (slug: string, opts: { lang: string }) => {
       try {
         const client = getClient()
         process.stdout.write("Running study check... ")
@@ -202,7 +203,7 @@ export function registerInterviewsCommand(program: Command): void {
           issues: Array<{ severity: string; short_description: string; issue_details: string }>
           error_count: number
           warning_count: number
-        }>(`/interviews/${slug}/check`)
+        }>(`/interviews/${slug}/check?language=${opts.lang}`)
 
         const errors = check.issues.filter(i => i.severity === "error")
         const warnings = check.issues.filter(i => i.severity === "warning")
@@ -257,7 +258,7 @@ export function registerInterviewsCommand(program: Command): void {
           issues: Array<{ severity: string; short_description: string; issue_details: string }>
           error_count: number
           warning_count: number
-        }>(`/interviews/${slug}/check`)
+        }>(`/interviews/${slug}/check?language=zh`)
 
         if (check.error_count > 0) {
           console.log(`\n✗ Study check found ${check.error_count} error(s):`)
