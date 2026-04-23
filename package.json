@@ -1,6 +1,6 @@
 {
   "name": "@mizzenai/cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Mizzen CLI — manage interviews, study guides and conversation data from the command line",
   "type": "module",
   "bin": {
