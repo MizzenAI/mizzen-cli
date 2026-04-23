@@ -156,13 +156,20 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline show <slug>
 ```
 
-## 第八步：质量检查
+## 第八步：质量检查（检查 → 修复 → 再检查循环）
 
 ```bash
 mizzen-cli interview check <slug>
 ```
 
-如果 check 报告 error，必须先修复问题再继续。warning 和 recommendation 不阻止发布。
+检查完成后，**必须向用户完整展示所有 issue**（error、warning、recommendation），不要省略或折叠。
+
+**处理流程：**
+1. **有 error**：必须修复。向用户说明问题并建议修改方案，修改后重新运行 `check`
+2. **有 warning / recommendation**：向用户展示并建议修改，由用户决定是否修复。如果用户选择修改，修改后重新运行 `check`
+3. **全部处理完或用户确认跳过**：进入第九步
+
+这是一个循环：check → 展示问题 → 建议修改 → 用户确认修改 → 执行修改 → 再次 check → 直到用户满意。
 
 ## 第九步：测试访谈
 
