@@ -156,6 +156,19 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline show <slug>
 ```
 
+---
+
+**⚠️ 第八步到第十一步必须严格按顺序执行，不可跳步、不可合并：**
+
+**check → test → publish → share**
+
+1. 先 `check`，有问题先修
+2. 再让用户 `test`，确认体验没问题
+3. 用户确认后才 `publish`（禁止自作主张发布）
+4. 发布成功后才 `share` 生成分享链接（draft 状态不能 share）
+
+---
+
 ## 第八步：质量检查（检查 → 修复 → 再检查循环）
 
 ```bash
