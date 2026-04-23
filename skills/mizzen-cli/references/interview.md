@@ -44,10 +44,10 @@ mizzen-cli interview delete <slug>
 # 运行质量检查
 mizzen-cli interview check <slug>
 
-# 发布（draft → active，内部会先自动运行 check）
+# 发布（draft → active，必须先 check 通过）
 mizzen-cli interview publish <slug>
 
-# 创建分享链接（自动发布，返回受访者参与链接）
+# 创建分享链接（必须先 publish，draft 状态会报错）
 mizzen-cli interview share <slug>
 
 # 查看统计数据
@@ -93,10 +93,11 @@ mizzen-cli interview stats <slug>
 ### 发布并分享
 
 1. 确认大纲无误：`mizzen-cli outline show <slug>`
-2. 运行质量检查：`mizzen-cli interview check <slug>`（publish 也会自动运行）
-3. 发布：`mizzen-cli interview publish <slug>`
-4. 生成分享链接：`mizzen-cli interview share <slug>`
-5. 将分享链接展示给用户
+2. 运行质量检查：`mizzen-cli interview check <slug>`
+3. 建议用户测试：展示测试链接让用户预览
+4. 用户确认后发布：`mizzen-cli interview publish <slug>`
+5. 生成分享链接：`mizzen-cli interview share <slug>`
+6. 将分享链接展示给用户
 
 ### 修改访谈
 

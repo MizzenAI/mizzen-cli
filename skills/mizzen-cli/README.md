@@ -97,7 +97,7 @@ rules/question-design.md      # 题型选择与写作规范
 rules/screening.md            # 甄别题设计与意图伪装
 rules/follow-up.md            # 追问深度策略
 rules/instructions.md         # 条件逻辑与追问引导
-rules/cli-reference.md        # 完整 CLI 命令参考
+references/                   # CLI 命令参考 (interview/outline/conversation/insight/auth-config)
 ```
 
 ---
