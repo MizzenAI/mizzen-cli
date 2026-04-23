@@ -278,9 +278,9 @@ export function registerInterviewsCommand(program: Command): void {
         await client.post(`/interviews/${slug}/publish`)
         success(`Interview ${slug} published`)
         printKeyValue([
-          ["分享链接", getShareUrl(slug)],
           ["管理链接", getManageUrl(slug)],
         ])
+        console.log("\nRun `mizzen-cli interview share %s` to generate a share link.", slug)
       } catch (err) {
         handleError(err)
       }
