@@ -92,8 +92,7 @@ export function registerConversationsCommand(program: Command): void {
     .command("export <slug>")
     .description("Export all conversation transcripts to CSV")
     .option("-o, --output <file>", "Write to file instead of stdout")
-    .option("-s, --status <status>", "Filter by status (e.g. completed, timed_out)")
-    .action(async (slug: string, opts: { output?: string; status?: string }) => {
+    .action(async (slug: string, opts: { output?: string }) => {
       try {
         const client = getClient()
 
@@ -102,11 +101,9 @@ export function registerConversationsCommand(program: Command): void {
         let page = 1
         const size = 100
         while (true) {
-          const params: Record<string, string> = { page: String(page), size: String(size) }
-          if (opts.status) params["status"] = opts.status
           const data = await client.get<ConversationListResponse>(
             `/interviews/${slug}/conversations`,
-            params
+            { page: String(page), size: String(size) }
           )
           allItems.push(...data.items)
           if (allItems.length >= data.total || data.items.length < size) break
