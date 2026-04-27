@@ -19,7 +19,7 @@ function getShareUrl(slug: string): string {
 }
 
 function getPreviewUrl(slug: string): string {
-  return `${getSiteUrl()}/interview/${slug}?preview=true`
+  return `${getSiteUrl()}/interview/${slug}/create/edit#questions`
 }
 
 export function registerInterviewsCommand(program: Command): void {
