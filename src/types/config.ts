@@ -1,8 +1,8 @@
 import { z } from "zod"
 
 export const ApiConfigSchema = z.object({
-  base_url: z.string().url().default("https://api.mizzen.chat/open/v1"),
-  site_url: z.string().url().default("https://mizzen.chat"),
+  base_url: z.string().url().default("https://api.mizzen.top/open/v1"),
+  site_url: z.string().url().default("https://mizzen.top"),
   timeout: z.number().int().min(1).max(120).default(30),
 })
 
