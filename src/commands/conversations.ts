@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import { getClient } from "../client"
 import { colorStatus, formatDuration } from "../format"
-import { printData, printKeyValue, printJson } from "../output"
+import { printData, printKeyValue, printJson, success } from "../output"
 import { handleError } from "../errors"
 import type { Conversation, ConversationListResponse, TranscriptResponse, AnswersResponse } from "../types/api"
 
@@ -83,6 +83,32 @@ export function registerConversationsCommand(program: Command): void {
         const client = getClient()
         const data = await client.get<AnswersResponse>(`/interviews/${slug}/conversations/${id}/answers`)
         printJson(data)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  conversations
+    .command("hide <slug> <id>")
+    .description("Hide a conversation (excluded from reports/analysis)")
+    .action(async (slug: string, id: string) => {
+      try {
+        const client = getClient()
+        await client.patch(`/interviews/${slug}/conversations/${id}/visibility`, { is_hidden: true })
+        success(`Conversation #${id} hidden`)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  conversations
+    .command("unhide <slug> <id>")
+    .description("Restore a hidden conversation")
+    .action(async (slug: string, id: string) => {
+      try {
+        const client = getClient()
+        await client.patch(`/interviews/${slug}/conversations/${id}/visibility`, { is_hidden: false })
+        success(`Conversation #${id} restored`)
       } catch (err) {
         handleError(err)
       }
