@@ -2,7 +2,6 @@ import { Command } from "commander"
 import { readFileSync } from "node:fs"
 import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
-import { setOutputFormat } from "./output"
 import { setClientVersion } from "./client"
 import { isConfigured, maskApiKey, loadApiKey } from "./auth"
 import { registerAuthCommand } from "./commands/auth"
@@ -40,16 +39,6 @@ function createProgram(): Command {
     .name("mizzen-cli")
     .description(`Mizzen CLI — Manage interviews, study guides and conversation data\n\n  ${buildStatusLine()}`)
     .version(version, "-v, --version")
-    .option("--json", "Output in JSON format")
-    .option("--csv", "Output in CSV format")
-    .hook("preAction", (_thisCommand, actionCommand) => {
-      const opts = actionCommand.optsWithGlobals() as Record<string, unknown>
-      if (opts["json"]) {
-        setOutputFormat("json")
-      } else if (opts["csv"]) {
-        setOutputFormat("csv")
-      }
-    })
 
   registerAuthCommand(program)
   registerInterviewsCommand(program)

@@ -10,6 +10,15 @@ import type { OutlineResponse } from "../types/api"
  * "-学生" → { text: "学生", status: "reject" }
  * "其他"  → { text: "其他" }
  */
+function parsePayload(raw: string): Record<string, unknown> {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(`Invalid --payload JSON: ${msg}`)
+  }
+}
+
 function parseOptions(raw: string): Array<{ text: string; status?: string }> {
   return raw.split(",").map((o) => {
     const trimmed = o.trim()
@@ -183,7 +192,7 @@ export function registerOutlineCommand(program: Command): void {
         let body: Record<string, unknown>
 
         if (opts.payload) {
-          body = JSON.parse(opts.payload)
+          body = parsePayload(opts.payload)
         } else {
           body = {
             text: opts.text,
@@ -239,7 +248,7 @@ export function registerOutlineCommand(program: Command): void {
         let body: Record<string, unknown>
 
         if (opts.payload) {
-          body = JSON.parse(opts.payload)
+          body = parsePayload(opts.payload)
         } else {
           body = {}
           if (opts.text) body["text"] = opts.text

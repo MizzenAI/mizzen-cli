@@ -18,6 +18,10 @@ function getShareUrl(slug: string): string {
   return `${getSiteUrl()}/interview/${slug}?source=link`
 }
 
+function getPreviewUrl(slug: string): string {
+  return `${getSiteUrl()}/interview/${slug}?preview=true`
+}
+
 export function registerInterviewsCommand(program: Command): void {
   const interviews = program
     .command("interview")
@@ -74,6 +78,7 @@ export function registerInterviewsCommand(program: Command): void {
           ["Created", data.created_at?.slice(0, 10) ?? "-"],
           ["Published", data.published_at?.slice(0, 10) ?? "-"],
           ["管理链接", getManageUrl(data.slug)],
+          ["预览链接", getPreviewUrl(data.slug)],
           ["分享链接", data.status === "active" ? getShareUrl(data.slug) : "(需先发布)"],
         ])
       } catch (err) {
@@ -123,6 +128,7 @@ export function registerInterviewsCommand(program: Command): void {
           ["Title", data.title],
           ["Status", data.status],
           ["管理链接", getManageUrl(data.slug)],
+          ["预览链接", getPreviewUrl(data.slug)],
         ])
       } catch (err) {
         handleError(err)
@@ -192,8 +198,8 @@ export function registerInterviewsCommand(program: Command): void {
   interviews
     .command("check <slug>")
     .description("Run study check for an interview")
-    .option("--lang <language>", "Output language (zh, en)", "zh")
-    .action(async (slug: string, opts: { lang: string }) => {
+    .option("--language <language>", "Output language (zh, en)", "zh")
+    .action(async (slug: string, opts: { language: string }) => {
       try {
         const client = getClient()
         process.stdout.write("Running study check... ")
@@ -203,40 +209,37 @@ export function registerInterviewsCommand(program: Command): void {
           issues: Array<{ severity: string; short_description: string; issue_details: string }>
           error_count: number
           warning_count: number
-        }>(`/interviews/${slug}/check?language=${opts.lang}`)
+        }>(`/interviews/${slug}/check?language=${opts.language}`)
 
         const errors = check.issues.filter(i => i.severity === "error")
         const warnings = check.issues.filter(i => i.severity === "warning")
         const recommendations = check.issues.filter(i => i.severity === "recommendation")
 
         if (errors.length > 0) {
-          console.log(`\n✗ ${errors.length} error(s):`)
+          process.stdout.write(`\n✗ ${errors.length} error(s):\n`)
           for (const issue of errors) {
-            console.log(`  • ${issue.short_description}`)
-            console.log(`    ${issue.issue_details}\n`)
+            process.stdout.write(`  • ${issue.short_description}\n`)
+            process.stdout.write(`    ${issue.issue_details}\n\n`)
           }
         } else {
-          console.log("✓ No errors")
+          process.stdout.write("✓ No errors\n")
         }
 
         if (warnings.length > 0) {
-          console.log(`⚠ ${warnings.length} warning(s):`)
+          process.stdout.write(`⚠ ${warnings.length} warning(s):\n`)
           for (const issue of warnings) {
-            console.log(`  • ${issue.short_description}`)
+            process.stdout.write(`  • ${issue.short_description}\n`)
           }
         }
 
         if (recommendations.length > 0) {
-          console.log(`ℹ ${recommendations.length} recommendation(s):`)
+          process.stdout.write(`ℹ ${recommendations.length} recommendation(s):\n`)
           for (const issue of recommendations) {
-            console.log(`  • ${issue.short_description}`)
+            process.stdout.write(`  • ${issue.short_description}\n`)
           }
         }
 
-        if (check.cached) {
-          console.log("\n(cached result)")
-        }
-
+        if (check.cached) process.stdout.write("\n(cached result)\n")
         if (errors.length > 0) process.exit(1)
       } catch (err) {
         handleError(err)
@@ -261,17 +264,17 @@ export function registerInterviewsCommand(program: Command): void {
         }>(`/interviews/${slug}/check?language=zh`)
 
         if (check.error_count > 0) {
-          console.log(`\n✗ Study check found ${check.error_count} error(s):`)
+          process.stdout.write(`\n✗ Study check found ${check.error_count} error(s):\n`)
           for (const issue of check.issues.filter(i => i.severity === "error")) {
-            console.log(`  • ${issue.short_description}`)
-            console.log(`    ${issue.issue_details}\n`)
+            process.stdout.write(`  • ${issue.short_description}\n`)
+            process.stdout.write(`    ${issue.issue_details}\n\n`)
           }
           process.exit(1)
         }
 
         const warnings = check.warning_count
-        console.log(
-          `✓ Passed${warnings > 0 ? ` (${warnings} warning${warnings > 1 ? "s" : ""})` : ""}`
+        process.stdout.write(
+          `✓ Passed${warnings > 0 ? ` (${warnings} warning${warnings > 1 ? "s" : ""})` : ""}\n`
         )
 
         // Step 2: Publish
@@ -279,8 +282,9 @@ export function registerInterviewsCommand(program: Command): void {
         success(`Interview ${slug} published`)
         printKeyValue([
           ["管理链接", getManageUrl(slug)],
+          ["预览链接", getPreviewUrl(slug)],
         ])
-        console.log("\nRun `mizzen-cli interview share %s` to generate a share link.", slug)
+        process.stdout.write(`\nRun \`mizzen-cli interview share ${slug}\` to generate a share link.\n`)
       } catch (err) {
         handleError(err)
       }

@@ -37,13 +37,17 @@ function compareVersions(a: string, b: string): number {
   return 0
 }
 
+const API_PATH_PREFIX = "/open/v1"
+
 export class MizzenClient {
   private readonly baseUrl: string
   private readonly timeout: number
 
   constructor(baseUrl?: string, timeout?: number) {
     const config = loadConfig()
-    this.baseUrl = baseUrl ?? config.api.base_url
+    const raw = baseUrl ?? config.api.base_url
+    // Strip trailing slash and any /open/vN suffix from legacy configs
+    this.baseUrl = raw.replace(/\/+$/, "").replace(/\/open\/v\d+$/, "")
     this.timeout = (timeout ?? config.api.timeout) * 1000
   }
 
@@ -61,9 +65,8 @@ export class MizzenClient {
   }
 
   private buildUrl(path: string, params?: Record<string, string>): string {
-    const base = this.baseUrl.endsWith("/") ? this.baseUrl.slice(0, -1) : this.baseUrl
     const cleanPath = path.startsWith("/") ? path : `/${path}`
-    const url = new URL(`${base}${cleanPath}`)
+    const url = new URL(`${this.baseUrl}${API_PATH_PREFIX}${cleanPath}`)
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
