@@ -11,6 +11,7 @@ import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
+import { checkForUpdate } from "./update-check"
 
 function loadVersion(): string {
   try {
@@ -61,11 +62,15 @@ function createProgram(): Command {
 }
 
 const program = createProgram()
-program.parseAsync(process.argv).catch((err: unknown) => {
-  if (err instanceof Error) {
-    process.stderr.write(`Error: ${err.message}\n`)
-  } else {
-    process.stderr.write(`Error: ${String(err)}\n`)
-  }
-  process.exit(1)
-})
+const currentVersion = loadVersion()
+
+program.parseAsync(process.argv)
+  .then(() => checkForUpdate(currentVersion))
+  .catch((err: unknown) => {
+    if (err instanceof Error) {
+      process.stderr.write(`Error: ${err.message}\n`)
+    } else {
+      process.stderr.write(`Error: ${String(err)}\n`)
+    }
+    checkForUpdate(currentVersion).finally(() => process.exit(1))
+  })
