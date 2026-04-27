@@ -91,24 +91,29 @@ export function registerInterviewsCommand(program: Command): void {
     .description("Create a new interview")
     .requiredOption("-t, --title <title>", "Interview title")
     .option("--external-title <title>", "Title shown to respondents (defaults to --title)")
+    .option("--description <desc>", "Internal description")
     .option("--background <bg>", "Research background")
     .option("--goal <goal>", "Study goal")
     .option("--welcome <msg>", "Welcome message")
     .option("--closing <msg>", "Closing message")
-    .option("--language <lang>", "User language", "zh")
+    .option("--language <lang>", "Researcher language", "zh")
+    .option("--available-languages <list>", "Comma-separated translation languages (e.g. zh,en,ja)")
     .option("--mode <mode>", "Interview mode: audio, video, video_screen, text", "audio")
     .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
     .option("--tts", "Enable AI text-to-speech")
+    .option("--no-allow-anonymous", "Require respondent login")
     .action(async (opts: {
-      title: string; externalTitle?: string; background?: string;
+      title: string; externalTitle?: string; description?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language: string;
-      mode: string; talkMode: string; tts?: boolean
+      availableLanguages?: string;
+      mode: string; talkMode: string; tts?: boolean; allowAnonymous: boolean
     }) => {
       try {
         const client = getClient()
         const body: Record<string, unknown> = {
           title: opts.title,
           userLanguage: opts.language,
+          allowAnonymous: opts.allowAnonymous,
           config: {
             interviewMode: opts.mode,
             talkMode: opts.talkMode,
@@ -116,10 +121,14 @@ export function registerInterviewsCommand(program: Command): void {
           },
         }
         if (opts.externalTitle) body["externalTitle"] = opts.externalTitle
+        if (opts.description) body["description"] = opts.description
         if (opts.background) body["background"] = opts.background
         if (opts.goal) body["studyGoal"] = opts.goal
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
         if (opts.closing) body["closingMessage"] = opts.closing
+        if (opts.availableLanguages) {
+          body["availableLanguages"] = opts.availableLanguages.split(",").map(s => s.trim()).filter(Boolean)
+        }
 
         const data = await client.post<{ slug: string; title: string; status: string; created_at: string }>("/interviews", body)
         success(`Interview created: ${data.slug}`)
@@ -139,29 +148,41 @@ export function registerInterviewsCommand(program: Command): void {
     .command("update <slug>")
     .description("Update an interview")
     .option("-t, --title <title>", "New title")
+    .option("--external-title <title>", "New title shown to respondents")
+    .option("--description <desc>", "New internal description")
     .option("--background <bg>", "New background")
     .option("--goal <goal>", "New study goal")
     .option("--welcome <msg>", "New welcome message")
     .option("--closing <msg>", "New closing message")
-    .option("--language <lang>", "New user language")
+    .option("--language <lang>", "New researcher language")
+    .option("--available-languages <list>", "Comma-separated translation languages (e.g. zh,en,ja)")
     .option("--mode <mode>", "Interview mode: audio, video, video_screen, text")
     .option("--talk-mode <mode>", "Talk mode: manual, auto")
     .option("--tts", "Enable AI text-to-speech")
     .option("--no-tts", "Disable AI text-to-speech")
+    .option("--allow-anonymous", "Allow anonymous respondents")
+    .option("--no-allow-anonymous", "Require respondent login")
     .action(async (slug: string, opts: {
-      title?: string; background?: string;
+      title?: string; externalTitle?: string; description?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language?: string;
-      mode?: string; talkMode?: string; tts?: boolean
+      availableLanguages?: string;
+      mode?: string; talkMode?: string; tts?: boolean; allowAnonymous?: boolean
     }) => {
       try {
         const client = getClient()
         const body: Record<string, unknown> = {}
         if (opts.title) body["title"] = opts.title
+        if (opts.externalTitle) body["externalTitle"] = opts.externalTitle
+        if (opts.description) body["description"] = opts.description
         if (opts.background) body["background"] = opts.background
         if (opts.goal) body["studyGoal"] = opts.goal
         if (opts.welcome) body["welcomeMessage"] = opts.welcome
         if (opts.closing) body["closingMessage"] = opts.closing
         if (opts.language) body["userLanguage"] = opts.language
+        if (opts.allowAnonymous !== undefined) body["allowAnonymous"] = opts.allowAnonymous
+        if (opts.availableLanguages) {
+          body["availableLanguages"] = opts.availableLanguages.split(",").map(s => s.trim()).filter(Boolean)
+        }
         if (opts.mode || opts.talkMode || opts.tts !== undefined) {
           const config: Record<string, unknown> = {}
           if (opts.mode) config["interviewMode"] = opts.mode
