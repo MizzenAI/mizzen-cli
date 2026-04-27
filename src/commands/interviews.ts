@@ -95,7 +95,7 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--goal <goal>", "Study goal")
     .option("--welcome <msg>", "Welcome message")
     .option("--closing <msg>", "Closing message")
-    .option("--language <lang>", "User language", "zh-CN")
+    .option("--language <lang>", "User language", "zh")
     .option("--mode <mode>", "Interview mode: audio, video, video_screen, text", "audio")
     .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
     .option("--tts", "Enable AI text-to-speech")
