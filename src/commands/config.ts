@@ -18,16 +18,15 @@ export function registerConfigCommand(program: Command): void {
 
   config
     .command("set <key> <value>")
-    .description("Set a configuration value (e.g., api.base_url, output.format)")
+    .description("Set a configuration value (e.g., api.base_url, api.timeout)")
     .action((key: string, value: string) => {
       try {
         const cfg = updateConfig(key, value)
         success(`Set ${key} = ${value}`)
         printKeyValue([
           ["api.base_url", cfg.api.base_url],
+          ["api.site_url", cfg.api.site_url],
           ["api.timeout", String(cfg.api.timeout)],
-          ["output.format", cfg.output.format],
-          ["output.color", String(cfg.output.color)],
         ])
       } catch (err) {
         handleError(err)

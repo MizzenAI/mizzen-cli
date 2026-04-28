@@ -117,8 +117,6 @@ mizzen-cli insight generate <slug>
 | 🔑 认证 | `set-key`, `status`, `clear` |
 | ⚙️ 配置 | `show`, `set`, `reset` |
 
-所有命令支持 `--json` / `--csv` 输出。
-
 ```bash
 # 查看帮助
 mizzen-cli --help
@@ -153,10 +151,10 @@ skills/mizzen-cli/
 
 ## 相关
 
-- [Mizzen](https://mizzen.chat) — AI 用户访谈平台
+- [Mizzen](https://mizzen.top) — AI 用户访谈平台
 
 ---
 
 <p align="center">
-  <a href="https://mizzen.chat">mizzen.chat</a> · MIT License
+  <a href="https://mizzen.top">mizzen.top</a> · MIT License
 </p>

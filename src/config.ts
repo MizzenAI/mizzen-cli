@@ -67,23 +67,9 @@ export function updateConfig(key: string, value: string): Config {
     if (isNaN(num)) throw new Error(`Invalid timeout value: ${value}`)
     return saveAndReturn({ ...config, api: { ...config.api, timeout: num } })
   }
-  if (section === "output" && field === "format") {
-    if (!["table", "json", "csv"].includes(value)) {
-      throw new Error(`Invalid format: ${value}. Must be: table, json, or csv`)
-    }
-    return saveAndReturn({
-      ...config,
-      output: { ...config.output, format: value as "table" | "json" | "csv" },
-    })
-  }
-  if (section === "output" && field === "color") {
-    const bool = value === "true" ? true : value === "false" ? false : null
-    if (bool === null) throw new Error(`Invalid color value: ${value}. Must be: true or false`)
-    return saveAndReturn({ ...config, output: { ...config.output, color: bool } })
-  }
 
   throw new Error(
-    `Unknown config key: ${key}. Valid keys: api.base_url, api.site_url, api.timeout, output.format, output.color`
+    `Unknown config key: ${key}. Valid keys: api.base_url, api.site_url, api.timeout`
   )
 }
 

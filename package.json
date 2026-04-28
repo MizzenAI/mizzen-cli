@@ -1,6 +1,6 @@
 {
   "name": "@mizzenai/cli",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Mizzen CLI — manage interviews, study guides and conversation data from the command line",
   "type": "module",
   "bin": {
@@ -31,7 +31,7 @@
     "type": "git",
     "url": "https://github.com/MizzenAI/mizzen-cli.git"
   },
-  "homepage": "https://mizzen.chat",
+  "homepage": "https://mizzen.top",
   "bugs": {
     "url": "https://github.com/MizzenAI/mizzen-cli/issues"
   },

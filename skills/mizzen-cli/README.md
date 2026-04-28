@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://mizzen.chat/logo.svg" alt="Mizzen" width="100" />
+  <img src="https://mizzen.top/logo.svg" alt="Mizzen" width="100" />
 </p>
 
 <h1 align="center">Mizzen CLI Skill</h1>
@@ -44,7 +44,7 @@ npx skills add MizzenAI/mizzen-cli -a cursor -g
 mizzen-cli auth set-key <your-api-key>
 ```
 
-API Key 在 [Mizzen 工作区设置](https://mizzen.chat) 中创建。
+API Key 在 [Mizzen 工作区设置](https://mizzen.top) 中创建。
 
 **3. 让 Agent 开始工作：**
 
@@ -82,8 +82,6 @@ Agent 会分步引导你完成整个过程 — 理解目标、设计大纲、确
 | 🔑 认证 | `set-key`, `status`, `clear` |
 | ⚙️ 配置 | `show`, `set`, `reset` |
 
-所有命令支持 `--json` 输出，方便 Agent 程序化处理。
-
 ---
 
 ## 自定义 Agent 接入
@@ -104,10 +102,10 @@ references/                   # CLI 命令参考 (interview/outline/conversation
 
 ## 相关项目
 
-- [Mizzen](https://mizzen.chat) — AI 用户访谈平台
+- [Mizzen](https://mizzen.top) — AI 用户访谈平台
 
 ---
 
 <p align="center">
-  <a href="https://mizzen.chat">mizzen.chat</a> · MIT License
+  <a href="https://mizzen.top">mizzen.top</a> · MIT License
 </p>

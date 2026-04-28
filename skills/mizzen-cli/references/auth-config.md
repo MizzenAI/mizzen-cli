@@ -17,7 +17,7 @@ mizzen-cli auth clear
 
 也可通过环境变量：`export MIZZEN_API_KEY=mk_xxx`
 
-API Key 在 [Mizzen 工作区设置](https://mizzen.chat) 中创建。
+API Key 在 [Mizzen 工作区设置](https://mizzen.top) 中创建。
 
 ## 配置
 
@@ -34,24 +34,8 @@ mizzen-cli config set api.site_url https://...
 # 修改超时时间（秒）
 mizzen-cli config set api.timeout 60
 
-# 默认输出格式
-mizzen-cli config set output.format json    # table / json / csv
-
-# 禁用颜色输出
-mizzen-cli config set output.color false
-
 # 重置为默认
 mizzen-cli config reset
-```
-
-## 输出格式
-
-所有命令支持全局格式切换：
-
-```bash
-mizzen-cli --json interview list     # JSON 输出（适合程序处理）
-mizzen-cli --csv interview list      # CSV 输出（适合导出）
-mizzen-cli interview list            # 表格输出（默认，人类可读）
 ```
 
 ## AI Usage Guidance
