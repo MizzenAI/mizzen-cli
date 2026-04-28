@@ -55,6 +55,7 @@ export class MizzenClient {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-Client-Type": "cli",
+      "X-Client-Version": clientVersion,
     }
 
     if (apiKey) {
