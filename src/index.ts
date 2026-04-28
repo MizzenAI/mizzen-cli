@@ -10,8 +10,7 @@ import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
-import { checkForUpdate } from "./update-check"
-import { HandledExit } from "./errors"
+import { maybePrintUpdateBanner, refreshUpdateCacheInBackground } from "./update-check"
 
 function loadVersion(): string {
   try {
@@ -51,38 +50,20 @@ function createProgram(): Command {
   return program
 }
 
-const program = createProgram()
 const currentVersion = loadVersion()
 
-// exitOverride() makes commander throw a CommanderError instead of
-// process.exit'ing on --help, --version, missing command, etc. — that lets
-// the post-command update check run for every code path, not just successful
-// actions.
-program.exitOverride()
+// Cache-first update check: synchronously print banner from last fetch,
+// kick off a background refresh for next run. Doesn't depend on commander's
+// exit path, doesn't need to await anything.
+maybePrintUpdateBanner(currentVersion)
+refreshUpdateCacheInBackground()
 
-;(async () => {
-  let exitCode = 0
-  try {
-    await program.parseAsync(process.argv)
-  } catch (err: unknown) {
-    if (err instanceof HandledExit) {
-      // handleError already printed the message
-      exitCode = 1
-    } else if (
-      err && typeof err === "object" && "code" in err &&
-      typeof (err as { code?: unknown }).code === "string" &&
-      ((err as { code: string }).code).startsWith("commander.")
-    ) {
-      // Commander's normal exits (help, version, missing command, etc.)
-      exitCode = (err as { exitCode?: number }).exitCode ?? 0
-    } else if (err instanceof Error) {
-      process.stderr.write(`Error: ${err.message}\n`)
-      exitCode = 1
-    } else {
-      process.stderr.write(`Error: ${String(err)}\n`)
-      exitCode = 1
-    }
+const program = createProgram()
+program.parseAsync(process.argv).catch((err: unknown) => {
+  if (err instanceof Error) {
+    process.stderr.write(`Error: ${err.message}\n`)
+  } else {
+    process.stderr.write(`Error: ${String(err)}\n`)
   }
-  await checkForUpdate(currentVersion)
-  process.exit(exitCode)
-})()
+  process.exit(1)
+})
