@@ -44,10 +44,13 @@ function writeCache(entry: CacheEntry): void {
 }
 
 function printBanner(currentVersion: string, latestVersion: string): void {
+  const useColor = process.stderr.isTTY
+  const yellow = useColor ? "\x1b[33m" : ""
+  const reset = useColor ? "\x1b[0m" : ""
   process.stderr.write(
-    `\n[33m┌─ Update available: ${currentVersion} → ${latestVersion}\n` +
+    `\n${yellow}┌─ Update available: ${currentVersion} → ${latestVersion}\n` +
     `│  Run: npm install -g @mizzenai/cli\n` +
-    `└─[0m\n\n`
+    `└─${reset}\n\n`
   )
 }
 
