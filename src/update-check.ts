@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
@@ -6,6 +7,8 @@ const CACHE_DIR = join(homedir(), ".mizzen")
 const CACHE_FILE = join(CACHE_DIR, "update-check.json")
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000  // 24h
 const REGISTRY_URL = "https://registry.npmjs.org/@mizzenai/cli/latest"
+
+const WORKER_FLAG = "--__internal-update-check"
 
 interface CacheEntry {
   latestVersion: string
@@ -49,10 +52,9 @@ function printBanner(currentVersion: string, latestVersion: string): void {
 }
 
 /**
- * Synchronously print an update banner if our cached "latest" is newer than
- * what's running. Cheap (one file read), happens before commander runs so the
- * banner shows on every invocation — even --help, --version, missing-command,
- * or any error path.
+ * Sync read of cache, print banner if cached "latest" is newer than current.
+ * Runs at process startup so the banner shows on every code path
+ * (--help, --version, missing-command, errors, success).
  */
 export function maybePrintUpdateBanner(currentVersion: string): void {
   const cache = readCache()
@@ -63,31 +65,56 @@ export function maybePrintUpdateBanner(currentVersion: string): void {
 }
 
 /**
- * Fire-and-forget refresh of the cache. Runs in the background; if the process
- * exits before fetch completes, the cache stays stale and next run will retry.
- * Banner appears starting the run AFTER a successful fetch.
+ * Spawn a detached child process that fetches the latest version and writes
+ * the cache. The child outlives the parent — even if the parent calls
+ * process.exit, the child keeps running. The fetched value shows up as a
+ * banner on the *next* invocation.
+ *
+ * Skipped if cache is still fresh (within TTL).
  */
 export function refreshUpdateCacheInBackground(): void {
   const cache = readCache()
   if (cache && Date.now() - cache.checkedAt < CACHE_TTL_MS) return
 
-  // Don't await — let the request race the process lifetime.
-  void (async () => {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 3000)
-      const response = await fetch(REGISTRY_URL, {
-        signal: controller.signal,
-        headers: { Accept: "application/json" },
-      })
-      clearTimeout(timeoutId)
-      if (!response.ok) return
-      const data = await response.json() as { version?: string }
-      if (data.version) {
-        writeCache({ latestVersion: data.version, checkedAt: Date.now() })
-      }
-    } catch {
-      // Network errors are fine — try again next run
+  // Re-invoke ourselves with WORKER_FLAG so the child runs `runUpdateWorker()`
+  // and exits, instead of going through commander's argv parsing.
+  const entry = process.argv[1]
+  if (!entry) return
+  try {
+    const child = spawn(process.execPath, [entry, WORKER_FLAG], {
+      detached: true,
+      stdio: "ignore",
+    })
+    child.unref()
+  } catch {
+    // Spawn errors are non-fatal — try again next run
+  }
+}
+
+/**
+ * Body of the detached worker. Returns true if argv indicates we should
+ * run the worker and exit (so the caller can short-circuit before commander
+ * parses the special flag).
+ */
+export function isUpdateWorkerInvocation(): boolean {
+  return process.argv.includes(WORKER_FLAG)
+}
+
+export async function runUpdateWorker(): Promise<void> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const response = await fetch(REGISTRY_URL, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+    clearTimeout(timeoutId)
+    if (!response.ok) return
+    const data = await response.json() as { version?: string }
+    if (data.version) {
+      writeCache({ latestVersion: data.version, checkedAt: Date.now() })
     }
-  })()
+  } catch {
+    // Network failures are fine — try again next run
+  }
 }
