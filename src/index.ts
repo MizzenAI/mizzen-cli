@@ -10,12 +10,6 @@ import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
-import {
-  isUpdateWorkerInvocation,
-  maybePrintUpdateBanner,
-  refreshUpdateCacheInBackground,
-  runUpdateWorker,
-} from "./update-check"
 
 function loadVersion(): string {
   try {
@@ -55,25 +49,12 @@ function createProgram(): Command {
   return program
 }
 
-// Detached worker mode: parent re-invokes us with the worker flag to fetch
-// and write the cache. Short-circuit completely before commander touches argv.
-if (isUpdateWorkerInvocation()) {
-  runUpdateWorker().finally(() => process.exit(0))
-} else {
-  const currentVersion = loadVersion()
-
-  // Cache-first update check: synchronously print banner from last fetch,
-  // spawn detached worker to refresh cache for the next invocation.
-  maybePrintUpdateBanner(currentVersion)
-  refreshUpdateCacheInBackground()
-
-  const program = createProgram()
-  program.parseAsync(process.argv).catch((err: unknown) => {
-    if (err instanceof Error) {
-      process.stderr.write(`Error: ${err.message}\n`)
-    } else {
-      process.stderr.write(`Error: ${String(err)}\n`)
-    }
-    process.exit(1)
-  })
-}
+const program = createProgram()
+program.parseAsync(process.argv).catch((err: unknown) => {
+  if (err instanceof Error) {
+    process.stderr.write(`Error: ${err.message}\n`)
+  } else {
+    process.stderr.write(`Error: ${String(err)}\n`)
+  }
+  process.exit(1)
+})
