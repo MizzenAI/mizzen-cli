@@ -13,7 +13,8 @@ mizzen-cli interview create \
   --goal "挖掘用户放弃使用产品的核心原因和决策过程" \
   --welcome "你好！感谢参与本次调研。我们想了解你使用产品的真实体验，大概需要15分钟。" \
   --closing "感谢你的分享！你的反馈对我们非常有价值。" \
-  --language zh-CN \
+  --language zh \
+  --available-languages zh,en,ja \
   --mode audio \
   --talk-mode manual
 
@@ -66,7 +67,9 @@ mizzen-cli interview stats <slug>
 | `--goal <text>` | 否 | 研究目标 |
 | `--welcome <text>` | 否 | 欢迎语（受访者进入时看到） |
 | `--closing <text>` | 否 | 结束语（访谈结束时显示） |
-| `--language <code>` | 否 | 语言代码（默认 `zh-CN`） |
+| `--language <code>` | 否 | 研究者语言（默认 `zh`）。支持：`zh`、`zh-HK`、`zh-TW`、`en`、`ja`、`ko`、`fr`、`de`、`es`、`pt`、`ru`、`ar`、`it`、`hi`、`th`、`vi`、`id`、`ms`、`tr`、`pl`、`nl`、`sv`、`fil`、`te` |
+| `--available-languages <list>` | 否 | 翻译目标语言（逗号分隔，例如 `zh,en,ja`）。同 `--language` 取值范围。设置后受访者可在多语言间切换 |
+| `--allow-anonymous` / `--no-allow-anonymous` | 否 | 是否允许匿名作答（默认允许） |
 | `--mode <mode>` | 否 | 访谈模式：`audio`（默认）/ `video` / `video_screen` / `text` |
 | `--talk-mode <mode>` | 否 | 对话模式：`manual`（按键说话，默认）/ `auto`（自动语音检测） |
 | `--tts` | 否 | 启用 AI 语音播报 |
