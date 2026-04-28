@@ -1,6 +1,11 @@
 <h1 align="center">Mizzen CLI</h1>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/@mizzenai/cli"><img src="https://img.shields.io/npm/v/@mizzenai/cli.svg" alt="npm version" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/@mizzenai/cli.svg" alt="license" /></a>
+</p>
+
+<p align="center">
   Mizzen 命令行工具 + AI Agent 技能包 — 通过命令行管理用户研究访谈，内置访谈设计方法论。
 </p>
 
