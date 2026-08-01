@@ -23,6 +23,16 @@ export class UpgradeRequiredError extends Error {
 
 let clientVersion = "0.0.0"
 
+export function formatStructuredDetail(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
+  const detail = value as Record<string, unknown>
+  const code = typeof detail["code"] === "string" ? detail["code"] : undefined
+  const message = typeof detail["message"] === "string" ? detail["message"] : undefined
+  const path = typeof detail["path"] === "string" ? detail["path"] : undefined
+  if (!code && !message) return undefined
+  return [code, message, path ? `at ${path}` : undefined].filter(Boolean).join(": ")
+}
+
 export function setClientVersion(version: string): void {
   clientVersion = version
 }
@@ -107,6 +117,8 @@ export class MizzenClient {
             if (items) detail = items
           } else if (typeof errorBody["detail"] === "string") {
             detail = errorBody["detail"]
+          } else {
+            detail = formatStructuredDetail(errorBody["detail"]) ?? detail
           }
           // Our error format: { error: { code, message } }
           const err = errorBody["error"]

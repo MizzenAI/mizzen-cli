@@ -1,8 +1,9 @@
 import { Command } from "commander"
+import { randomUUID } from "node:crypto"
 import { getClient } from "../client"
 import { success, printJson, printData } from "../output"
 import { handleError } from "../errors"
-import type { OutlineResponse } from "../types/api"
+import type { OutlineResponse, StudyGuideOption, StudyGuideOptionValue } from "../types/api"
 
 /**
  * Parse options string with +/- prefix for approve/reject status.
@@ -19,17 +20,86 @@ function parsePayload(raw: string): Record<string, unknown> {
   }
 }
 
-function parseOptions(raw: string): Array<{ text: string; status?: string }> {
+export function parseOptions(raw: string): Array<{ id: string; text: string; status?: string }> {
   return raw.split(",").map((o) => {
     const trimmed = o.trim()
     if (trimmed.startsWith("+")) {
-      return { text: trimmed.slice(1), status: "approve" }
+      return { id: randomUUID(), text: trimmed.slice(1), status: "approve" }
     }
     if (trimmed.startsWith("-")) {
-      return { text: trimmed.slice(1), status: "reject" }
+      return { id: randomUUID(), text: trimmed.slice(1), status: "reject" }
     }
-    return { text: trimmed }
+    return { id: randomUUID(), text: trimmed }
   })
+}
+
+function optionValue(option: StudyGuideOption): StudyGuideOptionValue | null {
+  return typeof option === "string" ? null : option
+}
+
+export function findQuestionOptions(outline: OutlineResponse, questionId: string): StudyGuideOption[] {
+  const question = outline.outline
+    .flatMap((section) => section.items)
+    .find((item) => item.id === questionId)
+
+  if (!question) throw new Error(`Question '${questionId}' not found`)
+  if (!question.options) throw new Error(`Question '${questionId}' has no options`)
+  return question.options
+}
+
+function findOptionIndex(options: StudyGuideOption[], optionId: string): number {
+  const index = options.findIndex((option) => optionValue(option)?.id === optionId)
+  if (index === -1) throw new Error(`Option '${optionId}' not found`)
+  return index
+}
+
+export function updateOptionById(
+  options: StudyGuideOption[],
+  optionId: string,
+  changes: Partial<Pick<StudyGuideOptionValue, "text" | "status">>,
+): StudyGuideOption[] {
+  const index = findOptionIndex(options, optionId)
+  const current = optionValue(options[index]!)!
+  const updated = [...options]
+  updated[index] = { ...current, ...changes }
+  return updated
+}
+
+export function deleteOptionById(options: StudyGuideOption[], optionId: string): StudyGuideOption[] {
+  const index = findOptionIndex(options, optionId)
+  return options.filter((_, optionIndex) => optionIndex !== index)
+}
+
+export function reorderOptions(options: StudyGuideOption[], optionIds: string[]): StudyGuideOption[] {
+  const currentIds = options.map((option) => optionValue(option)?.id)
+  if (currentIds.some((id) => !id)) {
+    throw new Error("All options require stable ids before reordering")
+  }
+  if (optionIds.length !== options.length || new Set(optionIds).size !== optionIds.length) {
+    throw new Error("Reorder must include every option id exactly once")
+  }
+  const byId = new Map(options.map((option) => [optionValue(option)!.id!, option]))
+  return optionIds.map((id) => {
+    const option = byId.get(id)
+    if (!option) throw new Error(`Option '${id}' not found`)
+    return option
+  })
+}
+
+function parseStatus(status?: string): StudyGuideOptionValue["status"] {
+  if (status === undefined || status === "approve" || status === "reject" || status === "neutral") {
+    return status
+  }
+  throw new Error("Status must be approve, reject, or neutral")
+}
+
+async function getQuestionOptions(slug: string, questionId: string): Promise<StudyGuideOption[]> {
+  const outline = await getClient().get<OutlineResponse>(`/interviews/${slug}/outline`)
+  return findQuestionOptions(outline, questionId)
+}
+
+async function saveQuestionOptions(slug: string, questionId: string, options: StudyGuideOption[]): Promise<unknown> {
+  return getClient().patch(`/interviews/${slug}/questions/${questionId}`, { options })
 }
 
 export function registerOutlineCommand(program: Command): void {
@@ -42,10 +112,16 @@ export function registerOutlineCommand(program: Command): void {
   outline
     .command("show <slug>")
     .description("Show study guide outline")
-    .action(async (slug: string) => {
+    .option("--json", "Output the complete study guide as JSON")
+    .action(async (slug: string, opts: { json?: boolean }) => {
       try {
         const client = getClient()
         const data = await client.get<OutlineResponse>(`/interviews/${slug}/outline`)
+
+        if (opts.json) {
+          printJson(data)
+          return
+        }
 
         const rows: string[][] = []
         for (const section of data.outline) {
@@ -62,6 +138,15 @@ export function registerOutlineCommand(program: Command): void {
               item.questionType ?? item.itemType,
               item.text,
             ])
+            for (const option of item.options ?? []) {
+              const value = optionValue(option)
+              rows.push([
+                "",
+                value?.id ?? "-",
+                value?.status ? `option:${value.status}` : "option",
+                typeof option === "string" ? option : option.text,
+              ])
+            }
           }
         }
 
@@ -168,7 +253,7 @@ export function registerOutlineCommand(program: Command): void {
     .requiredOption("--text <text>", "Question text")
     .option("--type <type>", "Question type: open_ended, multiple_choice, scale, submission, statement", "open_ended")
     .option("--follow-up <level>", "Follow-up: none, light, heavy, auto")
-    .option("--options <opts>", "Comma-separated options, use +/- prefix for approve/reject (e.g. +全职,-学生,其他)")
+    .option("--options <opts>", "Comma-separated options; UUIDs are generated automatically (e.g. +全职,-学生,其他)")
     .option("--multi-select", "Allow multiple selections (for multiple_choice)")
     .option("--min-label <label>", "Scale min label (for scale type)")
     .option("--max-label <label>", "Scale max label (for scale type)")
@@ -232,7 +317,7 @@ export function registerOutlineCommand(program: Command): void {
     .option("--text <text>", "New question text")
     .option("--type <type>", "New question type")
     .option("--follow-up <level>", "New follow-up level")
-    .option("--options <opts>", "New comma-separated options, use +/- prefix for approve/reject")
+    .option("--options <opts>", "Replace options with new UUIDs; use --payload to preserve existing option ids")
     .option("--multi-select", "Allow multiple selections")
     .option("--no-multi-select", "Single selection only")
     .option("--min-label <label>", "New scale min label")
@@ -292,6 +377,83 @@ export function registerOutlineCommand(program: Command): void {
         const client = getClient()
         const data = await client.put(`/interviews/${slug}/sections/${sectionId}/questions/reorder`, { order: uuids })
         success("Questions reordered")
+        printJson(data)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  const option = question
+    .command("option")
+    .description("Manage question options by stable option id")
+
+  option
+    .command("add <slug> <question-id>")
+    .description("Add an option with a new UUID")
+    .requiredOption("--text <text>", "Option text")
+    .option("--status <status>", "Option status: approve, reject, neutral")
+    .action(async (slug: string, questionId: string, opts: { text: string; status?: string }) => {
+      try {
+        const options = await getQuestionOptions(slug, questionId)
+        const status = parseStatus(opts.status)
+        const nextOption: StudyGuideOptionValue = {
+          id: randomUUID(),
+          text: opts.text,
+          ...(status ? { status } : {}),
+        }
+        const data = await saveQuestionOptions(slug, questionId, [...options, nextOption])
+        success(`Option added: ${nextOption.id}`)
+        printJson(data)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  option
+    .command("update <slug> <question-id> <option-id>")
+    .description("Update an option without changing its UUID")
+    .option("--text <text>", "New option text")
+    .option("--status <status>", "New status: approve, reject, neutral")
+    .action(async (slug: string, questionId: string, optionId: string, opts: { text?: string; status?: string }) => {
+      try {
+        if (opts.text === undefined && opts.status === undefined) {
+          throw new Error("Provide --text or --status")
+        }
+        const options = await getQuestionOptions(slug, questionId)
+        const data = await saveQuestionOptions(slug, questionId, updateOptionById(options, optionId, {
+          ...(opts.text !== undefined ? { text: opts.text } : {}),
+          ...(opts.status !== undefined ? { status: parseStatus(opts.status) } : {}),
+        }))
+        success(`Option updated: ${optionId}`)
+        printJson(data)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  option
+    .command("delete <slug> <question-id> <option-id>")
+    .description("Delete an option by UUID")
+    .action(async (slug: string, questionId: string, optionId: string) => {
+      try {
+        const options = await getQuestionOptions(slug, questionId)
+        const data = await saveQuestionOptions(slug, questionId, deleteOptionById(options, optionId))
+        success(`Option deleted: ${optionId}`)
+        printJson(data)
+      } catch (err) {
+        handleError(err)
+      }
+    })
+
+  option
+    .command("reorder <slug> <question-id>")
+    .description("Reorder options without changing their UUIDs")
+    .argument("<option-ids...>", "Every option UUID in the desired order")
+    .action(async (slug: string, questionId: string, optionIds: string[]) => {
+      try {
+        const options = await getQuestionOptions(slug, questionId)
+        const data = await saveQuestionOptions(slug, questionId, reorderOptions(options, optionIds))
+        success("Options reordered")
         printJson(data)
       } catch (err) {
         handleError(err)
