@@ -13,7 +13,7 @@ permissions:
 jobs:
     pr-review:
         name: PR Review
-        if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association) }}
+        if: ${{ !github.event.pull_request.draft }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         concurrency:
@@ -25,7 +25,26 @@ jobs:
             UV_PYTHON: "3.12"
             LITELLM_LOCAL_MODEL_COST_MAP: "True"
         steps:
+            - name: Check trusted pull request source
+              id: trust
+              env:
+                  AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
+                  HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+                  REPOSITORY: ${{ github.repository }}
+              run: |
+                  set -euo pipefail
+
+                  trusted=false
+                  if [ "$HEAD_REPOSITORY" = "$REPOSITORY" ] && \
+                    { [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; }; then
+                    trusted=true
+                  fi
+
+                  echo "trusted=$trusted" >> "$GITHUB_OUTPUT"
+                  echo "Trusted PR source: $trusted"
+
             - name: Check requested reviewer eligibility
+              if: steps.trust.outputs.trusted == 'true'
               id: eligibility
               env:
                   GH_TOKEN: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
@@ -52,7 +71,7 @@ jobs:
                   echo "Should run PR Review for ${REVIEWER_LOGIN}: $should_review"
 
             - name: Check existing review for current commit
-              if: steps.eligibility.outputs.should_review == 'true'
+              if: steps.trust.outputs.trusted == 'true' && steps.eligibility.outputs.should_review == 'true'
               id: check-review
               env:
                   GH_TOKEN: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
@@ -72,7 +91,7 @@ jobs:
                   echo "Existing reviews by ${REVIEWER_LOGIN} for ${HEAD_SHA}: $count"
 
             - name: Run PR Review
-              if: steps.eligibility.outputs.should_review == 'true' && steps.check-review.outputs.count == '0'
+              if: steps.trust.outputs.trusted == 'true' && steps.eligibility.outputs.should_review == 'true' && steps.check-review.outputs.count == '0'
               uses: OpenHands/extensions/plugins/pr-review@279ece7e6e678dc1edee98da75a2cf05df2dbfa3
               with:
                   extensions-version: v0.10.0
