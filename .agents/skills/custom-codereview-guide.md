@@ -31,6 +31,7 @@ triggers:
 ### Public 仓库审查工作流的信任边界
 
 - 采用 OpenHands 官方按 reviewer request 触发的最小 workflow，并使用 GitHub 自动签发的短期 `GITHUB_TOKEN` 提交 review；禁止向 public 仓库注入可访问私有仓库的持久 PAT。
+- 已接受官方 Action 在 review 运行期使用仓库 `LLM_API_KEY` 的边界；这是该 Action 运行 agent 的必需输入，不得仅因此否决 PR。
 - GitHub 不向 fork 发起的 `pull_request` workflow 提供 LLM secret；外部 PR 需要审查时，应由维护者先确认来源和工作流边界。
 - 第三方 review Action 必须固定到审核过的完整 commit SHA。任何改回持久 PAT 或放松 Action pin 的改动都属于安全阻断项。
 

@@ -149,7 +149,7 @@ export function registerOutlineCommand(program: Command): void {
           for (const item of section.items) {
             rows.push([
               "",
-              item.readableId ?? "-",
+              item.id ?? "-",
               item.questionType ?? item.itemType,
               item.text,
             ])
