@@ -3,7 +3,7 @@ name: PR Review by OpenHands
 
 on:
     pull_request:
-        types: [review_requested, synchronize, reopened, ready_for_review]
+        types: [review_requested]
 
 permissions:
     contents: read
@@ -12,93 +12,15 @@ permissions:
 
 jobs:
     pr-review:
-        name: PR Review
-        if: ${{ !github.event.pull_request.draft }}
+        if: github.event.requested_reviewer.login == 'mizzenbot'
         runs-on: ubuntu-latest
         timeout-minutes: 15
-        concurrency:
-            group: pr-review-${{ github.repository }}-${{ github.event.pull_request.number }}
-            cancel-in-progress: true
-        env:
-            UV_INDEX_URL: https://pypi.org/simple
-            UV_NO_CONFIG: true
-            UV_PYTHON: "3.12"
-            LITELLM_LOCAL_MODEL_COST_MAP: "True"
         steps:
-            - name: Check trusted pull request source
-              id: trust
-              env:
-                  AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
-                  HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-                  REPOSITORY: ${{ github.repository }}
-              run: |
-                  set -euo pipefail
-
-                  trusted=false
-                  if [ "$HEAD_REPOSITORY" = "$REPOSITORY" ] && \
-                    { [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; }; then
-                    trusted=true
-                  fi
-
-                  echo "trusted=$trusted" >> "$GITHUB_OUTPUT"
-                  echo "Trusted PR source: $trusted"
-
-            - name: Check requested reviewer eligibility
-              if: steps.trust.outputs.trusted == 'true'
-              id: eligibility
-              env:
-                  GH_TOKEN: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
-                  EVENT_ACTION: ${{ github.event.action }}
-                  REQUESTED_REVIEWER: ${{ github.event.requested_reviewer.login }}
-                  PR_NUMBER: ${{ github.event.pull_request.number }}
-                  REPOSITORY: ${{ github.repository }}
-                  REVIEWER_LOGIN: mizzenbot
-              run: |
-                  set -euo pipefail
-
-                  should_review=false
-
-                  if [ "$EVENT_ACTION" = "review_requested" ] && [ "$REQUESTED_REVIEWER" = "$REVIEWER_LOGIN" ]; then
-                    should_review=true
-                  elif [ "$EVENT_ACTION" != "review_requested" ]; then
-                    if gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}/requested_reviewers" \
-                      --jq '.users[].login' | grep -Fxq "$REVIEWER_LOGIN"; then
-                      should_review=true
-                    fi
-                  fi
-
-                  echo "should_review=$should_review" >> "$GITHUB_OUTPUT"
-                  echo "Should run PR Review for ${REVIEWER_LOGIN}: $should_review"
-
-            - name: Check existing review for current commit
-              if: steps.trust.outputs.trusted == 'true' && steps.eligibility.outputs.should_review == 'true'
-              id: check-review
-              env:
-                  GH_TOKEN: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
-                  REVIEWER_LOGIN: mizzenbot
-                  REPOSITORY: ${{ github.repository }}
-                  PR_NUMBER: ${{ github.event.pull_request.number }}
-                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-              run: |
-                  set -euo pipefail
-
-                  count=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
-                    --paginate \
-                    --jq ".[] | select(.user.login == \"${REVIEWER_LOGIN}\" and .commit_id == \"${HEAD_SHA}\")" \
-                    2>/dev/null | jq -s 'length' 2>/dev/null || echo "0")
-
-                  echo "count=$count" >> "$GITHUB_OUTPUT"
-                  echo "Existing reviews by ${REVIEWER_LOGIN} for ${HEAD_SHA}: $count"
-
             - name: Run PR Review
-              if: steps.trust.outputs.trusted == 'true' && steps.eligibility.outputs.should_review == 'true' && steps.check-review.outputs.count == '0'
               uses: OpenHands/extensions/plugins/pr-review@279ece7e6e678dc1edee98da75a2cf05df2dbfa3
               with:
-                  extensions-version: v0.10.0
-                  openhands-sdk-package: openhands-sdk==1.35.0,openhands-tools==1.34.0,fastmcp==3.4.4,lmnr==0.7.52,fastapi==0.139.0,litellm==1.93.0
+                  extensions-version: 279ece7e6e678dc1edee98da75a2cf05df2dbfa3
                   llm-model: openrouter/openai/gpt-5.6-terra
                   llm-base-url: ${{ secrets.LLM_BASE_URL }}
-                  use-sub-agents: false
-                  enable-uv-cache: false
                   llm-api-key: ${{ secrets.LLM_API_KEY }}
-                  github-token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}

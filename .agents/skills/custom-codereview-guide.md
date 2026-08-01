@@ -30,9 +30,9 @@ triggers:
 
 ### Public 仓库审查工作流的信任边界
 
-- mizzen-cli 是 public 仓库，但自动审查只允许同仓库分支且 PR 作者为组织 `OWNER` / `MEMBER` 时运行；fork PR 和普通 collaborator PR 不得取得持久 secret。
-- 在上述受信任边界内，使用组织现有 `MIZZENBOT_GITHUB_PAT`、`LLM_BASE_URL` 和 `LLM_API_KEY` 是已接受的仓库集成方式，不应仅因它们是持久 secret 阻塞 PR。
-- 第三方 review Action 必须固定到审核过的完整 commit SHA。任何放宽作者、仓库来源或 Action pin 的改动都属于安全阻断项。
+- 采用 OpenHands 官方按 reviewer request 触发的最小 workflow，并使用 GitHub 自动签发的短期 `GITHUB_TOKEN` 提交 review；禁止向 public 仓库注入可访问私有仓库的持久 PAT。
+- GitHub 不向 fork 发起的 `pull_request` workflow 提供 LLM secret；外部 PR 需要审查时，应由维护者先确认来源和工作流边界。
+- 第三方 review Action 必须固定到审核过的完整 commit SHA。任何改回持久 PAT 或放松 Action pin 的改动都属于安全阻断项。
 
 ## Review 格式
 
