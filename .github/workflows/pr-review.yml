@@ -13,13 +13,7 @@ permissions:
 jobs:
     pr-review:
         name: PR Review
-        if: >-
-            ${{
-              !github.event.pull_request.draft &&
-              github.event.pull_request.head.repo.full_name == github.repository &&
-              (github.event.pull_request.author_association == 'OWNER' ||
-               github.event.pull_request.author_association == 'MEMBER')
-            }}
+        if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association) }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         concurrency:
