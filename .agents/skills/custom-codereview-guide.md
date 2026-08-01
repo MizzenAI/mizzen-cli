@@ -28,6 +28,12 @@ triggers:
 
 配置、workflow、文档、测试、格式调整和不改变行为的简单重构通常属于低风险；没有实际问题时应直接 approve。
 
+### Public 仓库审查工作流的信任边界
+
+- mizzen-cli 是 public 仓库，但自动审查只允许同仓库分支且 PR 作者为组织 `OWNER` / `MEMBER` 时运行；fork PR 和普通 collaborator PR 不得取得持久 secret。
+- 在上述受信任边界内，使用组织现有 `MIZZENBOT_GITHUB_PAT`、`LLM_BASE_URL` 和 `LLM_API_KEY` 是已接受的仓库集成方式，不应仅因它们是持久 secret 阻塞 PR。
+- 第三方 review Action 必须固定到审核过的完整 commit SHA。任何放宽作者、仓库来源或 Action pin 的改动都属于安全阻断项。
+
 ## Review 格式
 
 - 总体判断、问题摘要和结论放在 review body，保留官方 roasted 结构。
@@ -41,7 +47,7 @@ triggers:
 - **稳定 ID**：section、question 和 option 的修改、删除、排序必须使用 API 返回的稳定 ID。禁止用显示文本、翻译文本、大小写、数组位置或 `readableId` 猜测身份。
 - **选项 UUID**：新选项和缺少 ID 的 payload 选项必须使用 `node:crypto.randomUUID()` 生成 UUID；已有 ID 和其他 option 元数据必须原样保留。ID 缺失或不匹配时应明确失败，不得退回文本匹配。
 - **选项读改写**：按 option ID 修改时，要确认 Open API 回读了完整 options，并且 PATCH 不会丢失 `status`、`isOtherOption`、`isExclusive` 或未知的已返回字段。整组替换与稳定单项编辑的行为必须在帮助文案中区分清楚。
-- **原始 payload**：`--payload` 是用户输入边界。补齐协议字段时不得覆盖已有 ID 或静默删除字段；畸形 JSON 和后端结构化校验错误应原样暴露为明确错误。
+- **原始 payload**：`--payload` 是用户输入边界。只在 ID 属性缺失时生成 UUID；已提供但无效的 ID 必须保持原值并交给后端结构化拒绝。补齐协议字段时不得覆盖已有 ID 或静默删除字段；畸形 JSON 和后端结构化校验错误应原样暴露为明确错误。
 - **凭证安全**：API key 只能从 `MIZZEN_API_KEY` 或权限受限的 credentials 文件读取。不得提交凭证、在日志/错误/JSON 输出中打印完整 key，或降低 `~/.mizzen` 与 credentials 文件权限。
 - **错误语义**：保留 HTTP status，以及后端结构化错误的 code、message、path。禁止按错误字符串关键词判断业务状态，也不要吞掉会导致用户误以为操作成功的错误。
 - **输出契约**：结构化输出必须保持合法、完整 JSON；诊断和成功提示写 stderr，数据写 stdout，避免破坏 shell 管道。新增命令应同时检查默认人读输出和 JSON 输出。

@@ -42,7 +42,7 @@ export function withStableOptionIds(body: Record<string, unknown>): Record<strin
     options: options.map((option) => {
       if (typeof option === "string") return { id: randomUUID(), text: option }
       if (typeof option !== "object" || option === null || Array.isArray(option)) return option
-      if (option["id"]) return option
+      if (Object.hasOwn(option, "id")) return option
       return { ...option, id: randomUUID() }
     }),
   }

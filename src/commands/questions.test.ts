@@ -65,6 +65,7 @@ describe("parseOptions", () => {
         { text: "Option 4", status: "neutral", isExclusive: true },
         { id: OPTION_A, text: "Option 5", isOtherOption: true },
         "Option 6",
+        { id: "", text: "Invalid option" },
       ],
     }
 
@@ -88,6 +89,7 @@ describe("parseOptions", () => {
     expect(resultOptions[2]?.["id"]).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     )
+    expect(resultOptions[3]).toEqual({ id: "", text: "Invalid option" })
     expect(body.options[0]).not.toHaveProperty("id")
   })
 })
