@@ -5,6 +5,7 @@ import {
   parseOptions,
   reorderOptions,
   updateOptionById,
+  withStableOptionIds,
 } from "./questions"
 import type { OutlineResponse, StudyGuideOption } from "../types/api"
 
@@ -56,6 +57,38 @@ describe("parseOptions", () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       )
     }
+  })
+
+  test("fills missing payload ids while preserving existing ids and metadata", () => {
+    const body = {
+      options: [
+        { text: "Option 4", status: "neutral", isExclusive: true },
+        { id: OPTION_A, text: "Option 5", isOtherOption: true },
+        "Option 6",
+      ],
+    }
+
+    const result = withStableOptionIds(body)
+    const resultOptions = result["options"] as Array<Record<string, unknown>>
+
+    expect(resultOptions[0]).toMatchObject({
+      text: "Option 4",
+      status: "neutral",
+      isExclusive: true,
+    })
+    expect(resultOptions[0]?.["id"]).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    )
+    expect(resultOptions[1]).toEqual({
+      id: OPTION_A,
+      text: "Option 5",
+      isOtherOption: true,
+    })
+    expect(resultOptions[2]?.["text"]).toBe("Option 6")
+    expect(resultOptions[2]?.["id"]).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    )
+    expect(body.options[0]).not.toHaveProperty("id")
   })
 })
 

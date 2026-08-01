@@ -179,7 +179,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 | `--accepted-types <type>` | 否 | 上传题接受的文件类型：`image` / `video` / `audio` / `file` |
 | `--max-files <n>` | 否 | 上传题最大文件数 |
 | `--after <uuid>` | 否 | 插入到指定题目之后 |
-| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数） |
+| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数）；选项缺少 ID 时自动生成 UUID，已有 ID 保持不变 |
 
 #### question update
 

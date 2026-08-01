@@ -33,6 +33,21 @@ export function parseOptions(raw: string): Array<{ id: string; text: string; sta
   })
 }
 
+export function withStableOptionIds(body: Record<string, unknown>): Record<string, unknown> {
+  const options = body["options"]
+  if (!Array.isArray(options)) return body
+
+  return {
+    ...body,
+    options: options.map((option) => {
+      if (typeof option === "string") return { id: randomUUID(), text: option }
+      if (typeof option !== "object" || option === null || Array.isArray(option)) return option
+      if (option["id"]) return option
+      return { ...option, id: randomUUID() }
+    }),
+  }
+}
+
 function optionValue(option: StudyGuideOption): StudyGuideOptionValue | null {
   return typeof option === "string" ? null : option
 }
@@ -303,7 +318,10 @@ export function registerOutlineCommand(program: Command): void {
           if (opts.after) body["after"] = opts.after
         }
 
-        const data = await client.post(`/interviews/${slug}/sections/${sectionId}/questions`, body)
+        const data = await client.post(
+          `/interviews/${slug}/sections/${sectionId}/questions`,
+          withStableOptionIds(body),
+        )
         success("Question added")
         printJson(data)
       } catch (err) {
@@ -347,7 +365,10 @@ export function registerOutlineCommand(program: Command): void {
           if (opts.instructions) body["addInstructions"] = opts.instructions
         }
 
-        const data = await client.patch(`/interviews/${slug}/questions/${questionId}`, body)
+        const data = await client.patch(
+          `/interviews/${slug}/questions/${questionId}`,
+          withStableOptionIds(body),
+        )
         success("Question updated")
         printJson(data)
       } catch (err) {
