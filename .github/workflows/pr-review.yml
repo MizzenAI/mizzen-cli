@@ -1,0 +1,16 @@
+---
+name: PR Review by OpenHands
+
+on:
+    pull_request:
+        types: [review_requested, synchronize, reopened, ready_for_review]
+
+permissions:
+    contents: read
+    pull-requests: write
+    issues: write
+
+jobs:
+    pr-review:
+        uses: MizzenAI/gh-actions/.github/workflows/pr-review.yml@main
+        secrets: inherit
