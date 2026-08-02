@@ -116,7 +116,7 @@ mizzen-cli insight generate <slug>
 | 类别 | 命令 |
 |------|------|
 | 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats` |
-| 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder` |
+| 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder`, `question option add/update/delete/reorder` |
 | 💬 对话数据 | `list`, `get`, `transcript`, `answers` |
 | 📊 洞察报告 | `get`, `generate` |
 | 🔑 认证 | `set-key`, `status`, `clear` |

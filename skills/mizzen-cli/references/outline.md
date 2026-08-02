@@ -6,12 +6,14 @@
 
 ```bash
 mizzen-cli outline show <slug>
+mizzen-cli outline show <slug> --json
 ```
 
 - **创建完题目后必须用这个命令验证**（工作流第七步）
 - **修改前先用这个命令了解当前状态**，不要凭记忆操作
 - 返回的数据包含每个 section 的 `id` 和每个 question 的 `id`，后续修改/删除需要用这些 ID
-- 返回的选择题选项会显示 approve/reject 状态（`+` / `-` 标记）
+- 返回的选择题选项会显示 approve/reject/neutral 状态
+- 默认表格和 `--json` 都会返回 option ID；修改已有选项时必须使用该 ID
 
 ---
 
@@ -136,8 +138,17 @@ mizzen-cli outline question update <slug> <question-id> \
   --follow-up light
 
 # 修改选项的甄别状态
-mizzen-cli outline question update <slug> <question-id> \
-  --options "+通过选项,-拒绝选项,中性选项"
+mizzen-cli outline question option update <slug> <question-id> <option-id> \
+  --status reject
+
+# 修改选项文案（UUID 保持不变）
+mizzen-cli outline question option update <slug> <question-id> <option-id> \
+  --text "新文案"
+
+# 新增、删除、排序选项
+mizzen-cli outline question option add <slug> <question-id> --text "新选项"
+mizzen-cli outline question option delete <slug> <question-id> <option-id>
+mizzen-cli outline question option reorder <slug> <question-id> <option-id-2> <option-id-1>
 
 # 直接传 JSON body（复杂场景）
 mizzen-cli outline question add <slug> <section-id> \
@@ -160,7 +171,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 | `--type <type>` | 否 | 题型：`open_ended`（默认）/ `multiple_choice` / `scale` / `submission` / `statement` |
 | `--follow-up <level>` | 否 | 追问深度：`none` / `light` / `heavy` |
 | `--instructions <text>` | 否 | AI 主持人的追问引导（见 [instructions.md](../rules/instructions.md)） |
-| `--options <list>` | 选择题必填 | 逗号分隔的选项。`+` 前缀=approve，`-` 前缀=reject，无前缀=neutral |
+| `--options <list>` | 选择题必填 | 逗号分隔的选项；CLI 自动为每个选项生成 UUID。`+` 前缀=approve，`-` 前缀=reject，无前缀=neutral |
 | `--multi-select` | 否 | 选择题改为多选（默认单选） |
 | `--min-label <text>` | 量表题 | 量表最小值标签 |
 | `--max-label <text>` | 量表题 | 量表最大值标签 |
@@ -168,11 +179,13 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 | `--accepted-types <type>` | 否 | 上传题接受的文件类型：`image` / `video` / `audio` / `file` |
 | `--max-files <n>` | 否 | 上传题最大文件数 |
 | `--after <uuid>` | 否 | 插入到指定题目之后 |
-| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数） |
+| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数）；选项缺少 ID 时自动生成 UUID，已有 ID 保持不变 |
 
 #### question update
 
 与 `add` 相同的参数，只传需要修改的字段。`question-id` 从 `outline show` 获取。
+
+`question update --options` 会整组替换选项，并为传入选项生成新的 UUID。修改已有选项时应使用 `question option update/delete/reorder`，这些命令按 option ID 操作并保留其他选项的 UUID。不要根据文本猜测或恢复 ID。
 
 #### question reorder
 

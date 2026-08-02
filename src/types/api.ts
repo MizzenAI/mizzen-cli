@@ -35,7 +35,18 @@ export interface OutlineItem {
   itemType: string
   questionType: string | null
   text: string
+  options?: StudyGuideOption[]
 }
+
+export interface StudyGuideOptionValue {
+  id?: string
+  text: string
+  status?: "approve" | "reject" | "neutral"
+  isOtherOption?: boolean
+  isExclusive?: boolean
+}
+
+export type StudyGuideOption = string | StudyGuideOptionValue
 
 export interface OutlineResponse {
   outline: OutlineSection[]
