@@ -185,7 +185,7 @@ export function registerOutlineCommand(program: Command): void {
     .command("add <slug>")
     .description("Add a section")
     .requiredOption("-t, --title <title>", "Section title")
-    .option("--type <type>", "Section type: flat, screening, concept", "flat")
+    .option("--type <type>", "Section type: flat or screening", "flat")
     .option("--description <desc>", "Section description")
     .option("--after <uuid>", "Insert after this section UUID")
     .action(async (slug: string, opts: { title: string; type: string; description?: string; after?: string }) => {
@@ -210,7 +210,7 @@ export function registerOutlineCommand(program: Command): void {
     .command("update <slug> <section-id>")
     .description("Update a section")
     .option("-t, --title <title>", "New title")
-    .option("--type <type>", "New section type")
+    .option("--type <type>", "New section type: flat or screening")
     .option("--description <desc>", "New description")
     .action(async (slug: string, sectionId: string, opts: { title?: string; type?: string; description?: string }) => {
       try {
