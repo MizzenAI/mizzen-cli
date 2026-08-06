@@ -28,9 +28,6 @@ mizzen-cli outline section add <slug> -t "核心探索" --type flat
 # 添加甄别板块
 mizzen-cli outline section add <slug> -t "基本信息" --type screening
 
-# 添加概念测试板块
-mizzen-cli outline section add <slug> -t "概念测试" --type concept
-
 # 修改板块标题
 mizzen-cli outline section update <slug> <section-id> -t "新标题"
 
@@ -48,7 +45,7 @@ mizzen-cli outline section reorder <slug> <uuid1> <uuid2> <uuid3>
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `-t, --title <text>` | 是 | 板块标题 |
-| `--type <type>` | 否 | 板块类型：`flat`（普通，默认）/ `screening`（甄别）/ `concept`（概念测试） |
+| `--type <type>` | 否 | 板块类型：`flat`（普通，默认）/ `screening`（甄别） |
 
 #### section update
 

@@ -25,7 +25,7 @@ export interface OutlineSection {
   id: string | null
   readableId: string | null
   sectionTitle: string
-  sectionType: string
+  sectionType: "flat" | "screening"
   items: OutlineItem[]
 }
 

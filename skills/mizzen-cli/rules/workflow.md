@@ -40,7 +40,6 @@
 |----------|---------------|
 | screening | 甄别 |
 | flat | 普通 |
-| concept | 概念测试 |
 | open_ended | 开放题 |
 | multiple_choice | 选择题 |
 | scale | 量表题 |

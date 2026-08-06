@@ -18,7 +18,7 @@ description: |
 
 - **Interview**：访谈项目，由 `slug` 标识。包含标题、研究背景、目标、欢迎语、结束语等配置
 - **Outline**：访谈大纲，由多个 Section 组成
-- **Section**：板块，由 `section_id` 标识。类型：`flat`（普通）/ `screening`（甄别）/ `concept`（概念测试）
+- **Section**：板块，由 `section_id` 标识。类型：`flat`（普通）/ `screening`（甄别）
 - **Question**：题目，由 `question_id` 标识。类型：`open_ended` / `multiple_choice` / `scale` / `submission` / `statement`
 - **Conversation**：一次对话（一个受访者的完整访谈过程），由 `readable_id` 标识
 - **Insight**：洞察报告，基于多个已完成对话的 AI 分析
