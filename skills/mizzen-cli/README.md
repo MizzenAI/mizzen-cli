@@ -65,7 +65,7 @@ Agent 会分步引导你完成整个过程 — 理解目标、设计大纲、确
 | 技能 | 内容 |
 |------|------|
 | **工作流** | 分步创建流程：研究目标 → 大纲设计 → 用户确认 → 创建 → 发布 |
-| **题目设计** | 开放题 / 选择题 / 量表题的使用场景、写作原则、常见错误 |
+| **题目设计** | 开放题、常规结构题及矩阵/级联/排序/比重题的使用场景与写作原则 |
 | **甄别设计** | 意图伪装、选项分散、陷阱选项，防止受访者作弊 |
 | **追问策略** | 开放题支持 none / light / heavy / timed；timed 可设置时间预算 |
 | **访谈指引** | 条件跳转逻辑、分支路由、AI 主持人的追问方向引导 |
@@ -76,7 +76,7 @@ Agent 会分步引导你完成整个过程 — 理解目标、设计大纲、确
 | 类别 | 命令 |
 |------|------|
 | 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats` |
-| 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder` |
+| 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder`, `question option add/update/delete/reorder` |
 | 💬 对话数据 | `list`, `get`, `transcript`, `answers` |
 | 📊 洞察报告 | `get`, `generate` |
 | 🔑 认证 | `set-key`, `status`, `clear` |

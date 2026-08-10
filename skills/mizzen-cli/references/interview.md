@@ -72,7 +72,7 @@ mizzen-cli interview stats <slug>
 | `--allow-anonymous` / `--no-allow-anonymous` | 否 | 是否允许匿名作答（默认允许） |
 | `--mode <mode>` | 否 | 访谈模式：`audio`（默认）/ `video` / `video_screen` / `text` |
 | `--talk-mode <mode>` | 否 | 对话模式：`manual`（按键说话，默认）/ `auto`（自动语音检测） |
-| `--tts` | 否 | 启用 AI 语音播报 |
+| `--tts` | 否 | 启用 AI 语音播报；发送对象结构 `config.tts.enabled` |
 
 ### interview list
 
@@ -107,6 +107,8 @@ mizzen-cli interview stats <slug>
 1. 查看当前状态：`mizzen-cli interview get <slug>`
 2. 执行修改：`mizzen-cli interview update <slug> --field "新值"`
 3. 确认修改结果：`mizzen-cli interview get <slug>`
+
+更新命令支持 `--tts` / `--no-tts`。CLI 只修改 `tts.enabled`，保留已有的语速、音色和语言音色映射；旧版 CLI 写入的布尔值会在更新时迁移为对象结构。
 
 ## AI Usage Guidance
 

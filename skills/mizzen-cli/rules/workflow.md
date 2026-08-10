@@ -44,10 +44,15 @@
 | multiple_choice | 选择题 |
 | scale | 量表题 |
 | submission | 上传题 |
+| cascading | 级联题 |
+| matrix | 矩阵题 |
+| ranking | 排序题 |
+| proportion | 比重题 |
 | statement | 陈述/过渡语 |
 | none | 不追问 |
 | light | 轻度追问 |
 | heavy | 深度追问 |
+| timed | 限时追问 |
 
 展示格式示例：
 ```
