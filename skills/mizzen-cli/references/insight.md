@@ -13,6 +13,9 @@ mizzen-cli insight generate <slug>
 
 # 包含未完成对话的报告
 mizzen-cli insight generate <slug> --include-incomplete
+
+# 调整生成报告所需的最少参与者数（默认 3）
+mizzen-cli insight generate <slug> --min-participants 5
 ```
 
 ## Parameters
@@ -29,6 +32,7 @@ mizzen-cli insight generate <slug> --include-incomplete
 |------|------|
 | `<slug>` | 访谈的 slug |
 | `--include-incomplete` | 包含未完成的对话（默认只分析已完成对话） |
+| `--min-participants <n>` | 最少参与者数，默认 3 |
 
 ## Workflow
 

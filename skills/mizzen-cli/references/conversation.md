@@ -1,6 +1,6 @@
 # conversation 对话数据
 
-查看访谈的对话列表、对话详情、逐字稿和结构化回答。
+查看访谈的对话列表、对话详情、逐字稿和结构化回答，导出逐字稿或管理报告可见性。
 
 ## Recommended Commands
 
@@ -19,6 +19,13 @@ mizzen-cli conversation transcript <slug> <id>
 
 # 获取结构化回答（清洗后数据）
 mizzen-cli conversation answers <slug> <id>
+
+# 导出全部逐字稿为 CSV；省略 -o 时输出到 stdout
+mizzen-cli conversation export <slug> -o conversations.csv
+
+# 从报告和分析中隐藏，或恢复一条对话
+mizzen-cli conversation hide <slug> <id>
+mizzen-cli conversation unhide <slug> <id>
 ```
 
 ## Parameters
@@ -38,6 +45,15 @@ mizzen-cli conversation answers <slug> <id>
 |------|------|
 | `<slug>` | 访谈的 slug |
 | `<id>` | 对话的 readable_id（数字编号，从 `list` 获取） |
+
+### conversation export / hide / unhide
+
+| 命令或参数 | 说明 |
+|------------|------|
+| `export <slug>` | 分页拉取全部对话和逐字稿并生成 CSV |
+| `-o, --output <file>` | 将 CSV 写入文件；省略时输出到 stdout |
+| `hide <slug> <id>` | 隐藏该对话，使其不进入报告和分析 |
+| `unhide <slug> <id>` | 恢复隐藏对话 |
 
 ## Workflow
 
@@ -68,6 +84,7 @@ mizzen-cli conversation answers <slug> <id>
   - `failed`：异常中断的对话
 - **用户问"有多少人参与了"时**，用 `interview stats <slug>` 而不是 `conversation list`
 - **用户问"访谈效果怎么样"时**，用 `insight get <slug>` 获取洞察报告
+- **hide/unhide 会改变后续报告和分析的数据范围**，只有用户明确要求排除或恢复某条对话时执行
 
 ## Common Errors
 

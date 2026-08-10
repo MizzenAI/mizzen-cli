@@ -102,10 +102,10 @@ mizzen-cli insight generate <slug>
 | 技能 | 内容 |
 |------|------|
 | **工作流** | 分步创建流程：研究目标 → 大纲设计 → 用户确认 → 创建 → 发布 |
-| **题目设计** | 开放题 / 选择题 / 量表题的使用场景、写作原则、常见错误 |
+| **题目设计** | 开放、选择、量表、上传、级联、矩阵、排序、比重和陈述题的契约与设计原则 |
 | **甄别设计** | 意图伪装、选项分散、陷阱选项，防止受访者作弊 |
 | **追问策略** | 开放题支持 none / light / heavy / timed；timed 可设置时间预算 |
-| **访谈指引** | 条件跳转逻辑、分支路由、AI 主持人的追问方向引导 |
+| **访谈指引** | 开放题的 AI 主持人追问方向引导 |
 | **CLI 参考** | 完整命令参考，覆盖访谈、题目、对话、洞察报告 |
 
 ---
@@ -116,7 +116,7 @@ mizzen-cli insight generate <slug>
 |------|------|
 | 📋 访谈管理 | `create`, `update`, `delete`, `publish`, `share`, `get`, `list`, `stats` |
 | 📝 大纲管理 | `show`, `section add/update/delete/reorder`, `question add/update/delete/reorder`, `question option add/update/delete/reorder` |
-| 💬 对话数据 | `list`, `get`, `transcript`, `answers` |
+| 💬 对话数据 | `list`, `get`, `transcript`, `answers`, `export`, `hide`, `unhide` |
 | 📊 洞察报告 | `get`, `generate` |
 | 🔑 认证 | `set-key`, `status`, `clear` |
 | ⚙️ 配置 | `show`, `set`, `reset` |

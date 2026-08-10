@@ -75,6 +75,8 @@ Interview (slug)
 | 具体化提问 | **必须问具体事件**（"你昨天/上次……发生了什么"），**禁止问泛泛感受**（"你觉得……怎么样"） |
 | 场景化切入 | 每道题要有明确的场景锚点（时间、地点、触发事件） |
 | 追问深度 | 仅开放题支持 `none` / `light` / `heavy` / `timed`；`timed` 必须同时设置 `--time-budget`，结构题必须省略追问参数 |
+| 结构题契约 | 量表、上传、级联、矩阵、排序和比重题必须提供对应的完整配置；配置格式见 [question-design.md](rules/question-design.md) 和 [outline.md](references/outline.md) |
+| 稳定选项 ID | 选择、排序、比重等选项题按 ID 聚合；新增顶层 options 由 CLI 生成 UUID，修改已有选项必须保留原 ID |
 | 访谈时长 | 目标约 20-30 分钟（10-15 题），最长不超过 1 小时 |
 | 甄别选项 | 甄别题的选项用 `+` 标记通过、`-` 标记筛除，在 `--options` 中设置 |
 
@@ -82,7 +84,7 @@ Interview (slug)
 
 | 文件 | 内容 | 何时读取 |
 |------|------|----------|
-| [workflow.md](rules/workflow.md) | 分步创建工作流（10 步） | 开始创建访谈前 |
+| [workflow.md](rules/workflow.md) | 分步创建工作流（11 步） | 开始创建访谈前 |
 | [question-design.md](rules/question-design.md) | 题型选择、设计原则、写作规范 | 设计题目时 |
 | [screening.md](rules/screening.md) | 甄别题设计、意图伪装、陷阱选项 | 添加甄别板块时 |
 | [follow-up.md](rules/follow-up.md) | 追问深度策略（none/light/heavy/timed） | 设置追问级别时 |
@@ -96,6 +98,6 @@ Interview (slug)
 |------|-----------|------|
 | `interview create/get/list/update/delete/publish/share/stats` | [interview.md](references/interview.md) | 访谈创建、查看、修改、发布、分享 |
 | `outline show/section/question` | [outline.md](references/outline.md) | 大纲查看、板块管理、题目管理 |
-| `conversation list/get/transcript/answers` | [conversation.md](references/conversation.md) | 对话列表、详情、逐字稿、结构化回答 |
+| `conversation list/get/transcript/answers/export/hide/unhide` | [conversation.md](references/conversation.md) | 对话数据读取、导出及可见性管理 |
 | `insight get/generate` | [insight.md](references/insight.md) | 洞察报告获取与生成 |
 | `auth/config` | [auth-config.md](references/auth-config.md) | API Key 管理、CLI 配置 |
