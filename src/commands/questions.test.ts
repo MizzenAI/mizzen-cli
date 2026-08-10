@@ -6,6 +6,7 @@ import {
   findQuestionOptions,
   parseOptions,
   reorderOptions,
+  resolveQuestionType,
   updateOptionById,
   withStableOptionIds,
 } from "./questions"
@@ -40,6 +41,12 @@ const outline: OutlineResponse = {
       questionType: "multiple_choice",
       text: "Question",
       options,
+    }, {
+      id: "statement-id",
+      readableId: "T1",
+      itemType: "statement",
+      questionType: null,
+      text: "Statement",
     }],
   }],
 }
@@ -99,6 +106,7 @@ describe("parseOptions", () => {
 describe("stable option edits", () => {
   test("reads options from the outline", () => {
     expect(findQuestion(outline, "question-id").questionType).toBe("multiple_choice")
+    expect(resolveQuestionType(findQuestion(outline, "statement-id"))).toBe("statement")
     expect(findQuestionOptions(outline, "question-id")).toEqual(options)
   })
 

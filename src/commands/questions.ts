@@ -48,14 +48,21 @@ export function withStableOptionIds(body: Record<string, unknown>): Record<strin
   }
 }
 
+export function resolveQuestionType(
+  item: { itemType?: unknown; questionType?: unknown },
+  fallback = "open_ended",
+): string {
+  return item.itemType === "statement"
+    ? "statement"
+    : typeof item.questionType === "string"
+      ? item.questionType
+      : fallback
+}
+
 export function assertFollowUpSupported(body: Record<string, unknown>, currentQuestionType = "open_ended"): void {
   if (!Object.hasOwn(body, "followUp") && !Object.hasOwn(body, "timeBudget")) return
 
-  const questionType = body["itemType"] === "statement"
-    ? "statement"
-    : typeof body["questionType"] === "string"
-      ? body["questionType"]
-      : currentQuestionType
+  const questionType = resolveQuestionType(body, currentQuestionType)
   if (questionType !== "open_ended") {
     throw new Error(`Question type '${questionType}' does not support follow-up`)
   }
@@ -133,7 +140,7 @@ async function getQuestionOptions(slug: string, questionId: string): Promise<Stu
 
 async function getQuestionType(slug: string, questionId: string): Promise<string> {
   const outline = await getClient().get<OutlineResponse>(`/interviews/${slug}/outline`)
-  return findQuestion(outline, questionId).questionType ?? "open_ended"
+  return resolveQuestionType(findQuestion(outline, questionId))
 }
 
 async function saveQuestionOptions(slug: string, questionId: string, options: StudyGuideOption[]): Promise<unknown> {
