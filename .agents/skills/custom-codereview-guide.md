@@ -53,6 +53,8 @@ triggers:
 - **错误语义**：保留 HTTP status，以及后端结构化错误的 code、message、path。禁止按错误字符串关键词判断业务状态，也不要吞掉会导致用户误以为操作成功的错误。
 - **输出契约**：结构化输出必须保持合法、完整 JSON；诊断和成功提示写 stderr，数据写 stdout，避免破坏 shell 管道。新增命令应同时检查默认人读输出和 JSON 输出。
 - **跨版本兼容**：检查新 CLI 对当前已发布 backend-api 的行为，以及旧 CLI 对新 backend-api 的行为。破坏性协议变化必须明确发布顺序，必要时使用现有 `X-Client-Version` / `X-Min-CLI-Version` 机制。
+- **追问协议**：`followUp` 的有效值以当前前端和 Open API 为准，只有 `none` / `light` / `heavy` / `timed`；`auto` 仅是 talk mode，不是追问等级。不要把清理 CLI 中无法被后端接受的旧文档值视为兼容性破坏。
+- **限时字段**：Open API PATCH 当前忽略 `null`，CLI 无法物理删除已保存的 `timeBudget`；访谈运行时仅在 `followUp === "timed"` 时使用该字段。除非当前 PR 改动后端契约，不要要求 CLI 模拟服务端字段删除。
 - **文档同步**：新增或修改命令、参数、默认值时，同步更新 `README.md` 和 `skills/mizzen-cli/` 中对应 reference；AI Agent 不能依赖未文档化的参数。
 - **依赖选择**：优先使用 Node/Bun 标准库和现有依赖，不要为少量逻辑新增依赖或不必要抽象。
 - **测试有效性**：关键分支至少覆盖一条会失败的回归测试。合并前应运行 `bun test`、`bun run typecheck`、`bun run bundle` 和 `git diff --check`。
