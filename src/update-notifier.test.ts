@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { mkdtempSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { checkForUpdate, getCachedUpdate, refreshUpdateState } from "./update-notifier"
@@ -40,8 +40,55 @@ describe("update notifier", () => {
   test("schedules a refresh without waiting for network", () => {
     const path = join(mkdtempSync(join(tmpdir(), "mizzen-update-")), "missing.json")
     let scheduled = false
+    const originalCI = process.env["CI"]
+    delete process.env["CI"]
 
-    expect(checkForUpdate("0.2.0", path, () => { scheduled = true })).toBeNull()
-    expect(scheduled).toBe(true)
+    try {
+      expect(checkForUpdate("0.2.0", path, () => { scheduled = true })).toBeNull()
+      expect(scheduled).toBe(true)
+    } finally {
+      if (originalCI === undefined) delete process.env["CI"]
+      else process.env["CI"] = originalCI
+    }
+  })
+
+  test("the CLI exits before its detached worker writes the cache", async () => {
+    const home = mkdtempSync(join(tmpdir(), "mizzen-update-home-"))
+    const statePath = join(home, ".mizzen", "update-state.json")
+    const server = Bun.serve({
+      port: 0,
+      fetch: async () => {
+        await Bun.sleep(300)
+        return Response.json({ version: "0.3.0" })
+      },
+    })
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      HOME: home,
+      MIZZEN_CLI_UPDATE_REGISTRY_URL: `${server.url}latest`,
+    }
+    delete env["CI"]
+
+    try {
+      const cli = Bun.spawn([process.execPath, "src/index.ts", "--version"], {
+        cwd: process.cwd(),
+        env,
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      expect(await cli.exited).toBe(0)
+      expect(existsSync(statePath)).toBe(false)
+
+      for (let attempt = 0; attempt < 20 && !existsSync(statePath); attempt++) {
+        await Bun.sleep(100)
+      }
+
+      expect(JSON.parse(readFileSync(statePath, "utf-8"))).toMatchObject({
+        latestVersion: "0.3.0",
+      })
+    } finally {
+      server.stop(true)
+      rmSync(home, { recursive: true, force: true })
+    }
   })
 })

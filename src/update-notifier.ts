@@ -3,7 +3,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { getConfigDir } from "./config"
 
-const REGISTRY_URL = "https://registry.npmjs.org/@mizzenai/cli/latest"
+const REGISTRY_URL = process.env["MIZZEN_CLI_UPDATE_REGISTRY_URL"]
+  ?? "https://registry.npmjs.org/@mizzenai/cli/latest"
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const FETCH_TIMEOUT_MS = 5_000
 const UPDATE_WORKER_ENV = "MIZZEN_CLI_UPDATE_WORKER"
