@@ -14,6 +14,10 @@ description: |
 
 **CRITICAL — 使用任何 CLI 命令前，必须先确认认证状态：`mizzen-cli auth status`**
 
+## 版本更新通知
+
+JSON 输出中的 `_notice.update` 是 CLI 的版本通知，不是业务数据。看到该字段时，先完成用户当前请求，再简短告知 `current` 与 `latest` 版本，并提议执行其 `command` 字段中的更新命令。
+
 ## Core Concepts
 
 - **Interview**：访谈项目，由 `slug` 标识。包含标题、研究背景、目标、欢迎语、结束语等配置

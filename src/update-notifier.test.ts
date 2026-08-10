@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { checkForUpdate, getCachedUpdate, refreshUpdateState } from "./update-notifier"
@@ -86,6 +86,109 @@ describe("update notifier", () => {
       expect(JSON.parse(readFileSync(statePath, "utf-8"))).toMatchObject({
         latestVersion: "0.3.0",
       })
+    } finally {
+      server.stop(true)
+      rmSync(home, { recursive: true, force: true })
+    }
+  })
+
+  test("JSON output carries the update notice while text output keeps the warning", async () => {
+    const home = mkdtempSync(join(tmpdir(), "mizzen-update-home-"))
+    const configDir = join(home, ".mizzen")
+    const currentVersion = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf-8")).version
+    const latestVersion = "99.0.0"
+    mkdirSync(configDir)
+    writeFileSync(join(configDir, "update-state.json"), JSON.stringify({
+      latestVersion,
+      checkedAt: Date.now(),
+    }))
+    const server = Bun.serve({
+      port: 0,
+      fetch(request) {
+        if (new URL(request.url).pathname.endsWith("/answers")) {
+          return Response.json({
+            readable_id: 1,
+            cleaned_at: null,
+            questions: [],
+            _notice: { server: "preserved" },
+          })
+        }
+        return Response.json({
+          id: "insight-1",
+          version: 1,
+          status: "completed",
+          participant_count: 1,
+          report_data: { title: "Report" },
+          generated_at: null,
+        })
+      },
+    })
+    writeFileSync(join(configDir, "config.json"), JSON.stringify({
+      api: { base_url: server.url.toString(), site_url: "https://mizzen.top", timeout: 5 },
+    }))
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      HOME: home,
+      MIZZEN_API_KEY: "mk_test_key",
+    }
+    delete env["CI"]
+
+    async function runCli(args: string[]) {
+      const cli = Bun.spawn([process.execPath, "src/index.ts", ...args], {
+        cwd: process.cwd(),
+        env,
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(cli.stdout).text(),
+        new Response(cli.stderr).text(),
+        cli.exited,
+      ])
+      return { stdout, stderr, exitCode }
+    }
+
+    try {
+      const { stdout, stderr, exitCode } = await runCli(["config", "show"])
+
+      expect(exitCode).toBe(0)
+      expect(JSON.parse(stdout)["_notice"]).toEqual({
+        update: {
+          current: currentVersion,
+          latest: latestVersion,
+          message: `mizzen-cli ${latestVersion} available, current ${currentVersion}`,
+          command: "npm update -g @mizzenai/cli",
+        },
+      })
+      expect(stderr).toBe("")
+
+      const answers = await runCli(["conversation", "answers", "study", "1"])
+      expect(answers.exitCode).toBe(0)
+      expect(JSON.parse(answers.stdout)["_notice"]).toEqual({
+        server: "preserved",
+        update: {
+          current: currentVersion,
+          latest: latestVersion,
+          message: `mizzen-cli ${latestVersion} available, current ${currentVersion}`,
+          command: "npm update -g @mizzenai/cli",
+        },
+      })
+      expect(answers.stderr).toBe("")
+
+      const insight = await runCli(["insight", "get", "study"])
+      expect(insight.exitCode).toBe(0)
+      expect(insight.stdout).toContain("Report data:")
+      expect(insight.stdout).not.toContain('"_notice"')
+      expect(insight.stderr).toContain(
+        `Warning: mizzen-cli ${latestVersion} is available (current ${currentVersion})`,
+      )
+
+      const version = await runCli(["--version"])
+      expect(version.stdout.trim()).toBe(currentVersion)
+      expect(version.stderr).toContain(
+        `Warning: mizzen-cli ${latestVersion} is available (current ${currentVersion})`,
+      )
+      expect(version.exitCode).toBe(0)
     } finally {
       server.stop(true)
       rmSync(home, { recursive: true, force: true })

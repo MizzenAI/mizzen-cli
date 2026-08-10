@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import { getClient } from "../client"
 import { colorStatus, formatDuration } from "../format"
-import { printData, printKeyValue, printJson, success } from "../output"
+import { printData, printKeyValue, printJsonDocument, success } from "../output"
 import { handleError } from "../errors"
 import type { Conversation, ConversationListResponse, TranscriptResponse, AnswersResponse } from "../types/api"
 
@@ -82,7 +82,7 @@ export function registerConversationsCommand(program: Command): void {
       try {
         const client = getClient()
         const data = await client.get<AnswersResponse>(`/interviews/${slug}/conversations/${id}/answers`)
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }

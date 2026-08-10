@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import { randomUUID } from "node:crypto"
 import { getClient } from "../client"
-import { success, printJson, printData } from "../output"
+import { success, printJsonDocument, printData } from "../output"
 import { handleError } from "../errors"
 import type { OutlineItem, OutlineResponse, StudyGuideOption, StudyGuideOptionValue } from "../types/api"
 
@@ -226,7 +226,7 @@ export function registerOutlineCommand(program: Command): void {
         const data = await client.get<OutlineResponse>(`/interviews/${slug}/outline`)
 
         if (opts.json) {
-          printJson(data)
+          printJsonDocument(data)
           return
         }
 
@@ -292,7 +292,7 @@ export function registerOutlineCommand(program: Command): void {
 
         const data = await client.post(`/interviews/${slug}/sections`, body)
         success("Section added")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -314,7 +314,7 @@ export function registerOutlineCommand(program: Command): void {
 
         const data = await client.patch(`/interviews/${slug}/sections/${sectionId}`, body)
         success("Section updated")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -342,7 +342,7 @@ export function registerOutlineCommand(program: Command): void {
         const client = getClient()
         const data = await client.put(`/interviews/${slug}/sections/reorder`, { order: uuids })
         success("Sections reordered")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -414,7 +414,7 @@ export function registerOutlineCommand(program: Command): void {
           withStableOptionIds(body),
         )
         success("Question added")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -475,7 +475,7 @@ export function registerOutlineCommand(program: Command): void {
           withStableOptionIds(body),
         )
         success("Question updated")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -503,7 +503,7 @@ export function registerOutlineCommand(program: Command): void {
         const client = getClient()
         const data = await client.put(`/interviews/${slug}/sections/${sectionId}/questions/reorder`, { order: uuids })
         success("Questions reordered")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -529,7 +529,7 @@ export function registerOutlineCommand(program: Command): void {
         }
         const data = await saveQuestionOptions(slug, questionId, [...options, nextOption])
         success(`Option added: ${nextOption.id}`)
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -551,7 +551,7 @@ export function registerOutlineCommand(program: Command): void {
           ...(opts.status !== undefined ? { status: parseStatus(opts.status) } : {}),
         }))
         success(`Option updated: ${optionId}`)
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -565,7 +565,7 @@ export function registerOutlineCommand(program: Command): void {
         const options = await getQuestionOptions(slug, questionId)
         const data = await saveQuestionOptions(slug, questionId, deleteOptionById(options, optionId))
         success(`Option deleted: ${optionId}`)
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
@@ -580,7 +580,7 @@ export function registerOutlineCommand(program: Command): void {
         const options = await getQuestionOptions(slug, questionId)
         const data = await saveQuestionOptions(slug, questionId, reorderOptions(options, optionIds))
         success("Options reordered")
-        printJson(data)
+        printJsonDocument(data)
       } catch (err) {
         handleError(err)
       }
