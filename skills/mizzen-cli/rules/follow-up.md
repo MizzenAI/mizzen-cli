@@ -1,6 +1,6 @@
 # 追问深度策略
 
-访谈中 AI 主持人的追问行为由 `--follow-up` 参数控制。`--follow-up` 仅适用于 `open_ended`；选择题、量表题、上传题和陈述必须省略该参数。
+访谈中 AI 主持人的追问行为由 `--follow-up` 参数控制。`--follow-up` 仅适用于 `open_ended`；选择题、量表题、上传题、级联题、矩阵题、排序题、比重题和陈述必须省略该参数。
 
 ## 如何选择追问级别
 
@@ -9,6 +9,7 @@
 | 无需展开的开放题 | `none` | 回答后立即进入下一题 |
 | 暖场、收尾开放题 | `light` | 建立信任或简单收束 |
 | 核心探索、关键决策开放题 | `heavy` | 深入理解动机和过程 |
+| 有明确时长限制的开放题 | `timed` | 在给定时间预算内动态追问 |
 
 ## none — 不追问
 
@@ -62,13 +63,13 @@
 - 用户体验和决策过程
 - 需要深入了解的关键话题
 
-## auto — 自动判断
+## timed — 限时追问
 
-**设置**：`--follow-up auto`
+**设置**：`--follow-up timed --time-budget <分钟>`
 
-**行为**：AI 主持人根据受访者的回答自动决定是否追问以及追问深度。一般不推荐使用——明确指定 none/light/heavy 能让访谈节奏更可控。
+**行为**：AI 主持人在 0.1–60 分钟的时间预算内动态追问；`timed` 必须设置 `--time-budget`，其他级别不得设置该参数。
 
-**适用场景**：不确定该用哪个级别时的兜底选项。
+**适用场景**：需要控制单题最长探索时间的开放题。
 
 ## 追问的通用规则
 
@@ -101,4 +102,11 @@ mizzen-cli outline question add <slug> <section-id> \
   --text "你上次退掉一个已购买的产品是什么情况？为什么要退？" \
   --type open_ended \
   --follow-up heavy
+
+# 限时题：最多探索 5 分钟
+mizzen-cli outline question add <slug> <section-id> \
+  --text "请完整讲述你上次购买这类产品的过程。" \
+  --type open_ended \
+  --follow-up timed \
+  --time-budget 5
 ```
