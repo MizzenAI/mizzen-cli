@@ -1,9 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import {
+  assertFollowUpSupported,
   deleteOptionById,
+  findQuestion,
   findQuestionOptions,
   parseOptions,
   reorderOptions,
+  resolveQuestionType,
   updateOptionById,
   withStableOptionIds,
 } from "./questions"
@@ -38,6 +41,12 @@ const outline: OutlineResponse = {
       questionType: "multiple_choice",
       text: "Question",
       options,
+    }, {
+      id: "statement-id",
+      readableId: "T1",
+      itemType: "statement",
+      questionType: null,
+      text: "Statement",
     }],
   }],
 }
@@ -96,6 +105,8 @@ describe("parseOptions", () => {
 
 describe("stable option edits", () => {
   test("reads options from the outline", () => {
+    expect(findQuestion(outline, "question-id").questionType).toBe("multiple_choice")
+    expect(resolveQuestionType(findQuestion(outline, "statement-id"))).toBe("statement")
     expect(findQuestionOptions(outline, "question-id")).toEqual(options)
   })
 
@@ -114,5 +125,20 @@ describe("stable option edits", () => {
   test("rejects incomplete reorder lists and legacy options without ids", () => {
     expect(() => reorderOptions(options, [OPTION_A])).toThrow("every option id exactly once")
     expect(() => reorderOptions(["legacy", optionA], [OPTION_A])).toThrow("stable ids")
+  })
+})
+
+describe("question follow-up", () => {
+  test("allows follow-up only for open-ended questions", () => {
+    expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "heavy" })).not.toThrow()
+    expect(() => assertFollowUpSupported({ questionType: "scale", followUp: "none" })).toThrow(
+      "Question type 'scale' does not support follow-up",
+    )
+    expect(() => assertFollowUpSupported({ timeBudget: 2 }, "multiple_choice")).toThrow(
+      "Question type 'multiple_choice' does not support follow-up",
+    )
+    expect(() => assertFollowUpSupported({ itemType: "statement", followUp: "none" })).toThrow(
+      "Question type 'statement' does not support follow-up",
+    )
   })
 })

@@ -46,8 +46,7 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的工作状态？" \
   --type multiple_choice \
-  --options "+全职上班,+兼职,-学生,-退休,-待业" \
-  --follow-up none
+  --options "+全职上班,+兼职,-学生,-退休,-待业"
 ```
 
 ### scale（量表题）
@@ -81,14 +80,12 @@ mizzen-cli outline question add <slug> <section-id> \
   --type submission \
   --no-allow-text \
   --accepted-types image \
-  --max-files 3 \
-  --follow-up none
+  --max-files 3
 
 # 文字 + 文件都允许（默认配置）
 mizzen-cli outline question add <slug> <section-id> \
   --text "请分享你最近一次不满意的购物体验（可附截图）" \
-  --type submission \
-  --follow-up light
+  --type submission
 ```
 
 ### statement（陈述 / 过渡语）
