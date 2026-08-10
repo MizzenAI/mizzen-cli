@@ -1,11 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { get } from "node:https"
 import { dirname, join } from "node:path"
 import { getConfigDir } from "./config"
 
 const REGISTRY_URL = "https://registry.npmjs.org/@mizzenai/cli/latest"
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
-const MAX_RESPONSE_BYTES = 64 * 1024
+const FETCH_TIMEOUT_MS = 1_500
 
 type UpdateState = {
   latestVersion: string
@@ -52,37 +51,35 @@ function readState(path: string): UpdateState | null {
   }
 }
 
-function refreshState(path: string): void {
-  const request = get(REGISTRY_URL, (response) => {
-    if (response.statusCode !== 200) {
-      response.resume()
-      return
-    }
+function writeState(path: string, state: UpdateState): void {
+  try {
+    mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+    writeFileSync(path, JSON.stringify(state), { mode: 0o600 })
+  } catch {
+    // Update checks must never affect the command being run.
+  }
+}
 
-    response.setEncoding("utf-8")
-    let body = ""
-    response.on("data", (chunk: string) => {
-      body += chunk
-      if (body.length > MAX_RESPONSE_BYTES) response.destroy()
-    })
-    response.on("end", () => {
-      try {
-        const result = JSON.parse(body) as Record<string, unknown>
-        if (typeof result["version"] !== "string" || !parseVersion(result["version"])) return
-        mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
-        writeFileSync(path, JSON.stringify({
-          latestVersion: result["version"],
-          checkedAt: Date.now(),
-        }), { mode: 0o600 })
-      } catch {
-        // Update checks must never affect the command being run.
+async function refreshState(path: string, previous: UpdateState | null): Promise<UpdateState> {
+  const state = {
+    latestVersion: previous?.latestVersion ?? "",
+    checkedAt: Date.now(),
+  }
+
+  try {
+    const response = await fetch(REGISTRY_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    if (response.ok) {
+      const result = await response.json() as Record<string, unknown>
+      if (typeof result["version"] === "string" && parseVersion(result["version"])) {
+        state.latestVersion = result["version"]
       }
-    })
-  })
+    }
+  } catch {
+    // A failed check is cached too, so commands do not repeatedly wait on a bad network.
+  }
 
-  request.on("socket", (socket) => socket.unref())
-  request.on("error", () => {})
-  request.setTimeout(5_000, () => request.destroy())
+  writeState(path, state)
+  return state
 }
 
 export function getCachedUpdate(
@@ -94,12 +91,17 @@ export function getCachedUpdate(
   return { currentVersion, latestVersion: state.latestVersion }
 }
 
-export function checkForUpdate(currentVersion: string): UpdateNotice | null {
+export async function checkForUpdate(
+  currentVersion: string,
+  path = statePath(),
+): Promise<UpdateNotice | null> {
   if (process.env["CI"] || !parseVersion(currentVersion)) return null
 
-  const path = statePath()
-  const state = readState(path)
-  if (!state || Date.now() - state.checkedAt >= CACHE_TTL_MS) refreshState(path)
+  let state = readState(path)
+  if (!state || Date.now() - state.checkedAt >= CACHE_TTL_MS) {
+    state = await refreshState(path, state)
+  }
 
-  return getCachedUpdate(currentVersion, path)
+  if (!isNewer(state.latestVersion, currentVersion)) return null
+  return { currentVersion, latestVersion: state.latestVersion }
 }

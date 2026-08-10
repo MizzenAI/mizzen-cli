@@ -51,7 +51,7 @@ function createProgram(version: string): Command {
 }
 
 const version = loadVersion()
-const update = checkForUpdate(version)
+const update = await checkForUpdate(version)
 if (update) {
   warning(
     `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). `
