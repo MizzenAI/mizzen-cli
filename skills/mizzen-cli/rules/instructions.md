@@ -67,7 +67,6 @@ mizzen-cli outline question add <slug> <section-id> \
   --text "你是否有过网购退货的经历？" \
   --type multiple_choice \
   --options "有,没有" \
-  --follow-up none \
   --instructions "如果用户选择'没有'，跳到 Q6。"
 
 # 追问引导

@@ -10,7 +10,7 @@
 
 - 最多 5 道题（越少越好）
 - **只用选择题**，不用开放题
-- **追问设为 none**——甄别环节不追问
+- **省略追问参数**——甄别题是结构题，不支持 `--follow-up`
 - 创建题目时用 `--options` 的 `+/-` 前缀标记选项状态：`+选项` = 通过，`-选项` = 筛除
 - 示例：`--options "+全职上班,+兼职,-学生,-退休,-待业"`
 
@@ -79,8 +79,7 @@ mizzen-cli outline section add <slug> -t "基本信息" --type screening
 mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的职业是？" \
   --type multiple_choice \
-  --options "+软件工程师,-医疗保健从业者,-教师,-零售管理人员,-建筑工人,-会计师" \
-  --follow-up none
+  --options "+软件工程师,-医疗保健从业者,-教师,-零售管理人员,-建筑工人,-会计师"
 ```
 
 `+` = approve（通过），`-` = reject（筛除），无前缀 = neutral。

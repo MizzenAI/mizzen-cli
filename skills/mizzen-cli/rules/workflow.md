@@ -135,8 +135,7 @@ mizzen-cli outline section add <slug> -t "核心探索" --type flat
 mizzen-cli outline question add <slug> <screening-section-id> \
   --text "你的年龄段是？" \
   --type multiple_choice \
-  --options "+18-24,+25-30,+31-35,-36-45,-46以上" \
-  --follow-up none
+  --options "+18-24,+25-30,+31-35,-36-45,-46以上"
 
 # 添加开放题
 mizzen-cli outline question add <slug> <section-id> \
@@ -236,7 +235,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2>
 |------|----------|--------|
 | 大纲结构（几个板块、每板块几题） | ✅ 按方法论设计 | 展示后等确认 |
 | 题目文本 | ✅ 按方法论撰写 | 展示后等确认 |
-| 追问级别 | ✅ 按题型自动选 | 不需要问 |
+| 追问级别 | ✅ 仅开放题选择；结构题省略 | 不需要问 |
 | 访谈模式（audio/video/text） | ❌ | ✅ 必须问 |
 | 对外标题 | ✅ 可以建议 | 展示后等确认 |
 | 欢迎语/结束语 | ✅ 按方法论撰写 | 展示后等确认 |
@@ -267,8 +266,7 @@ mizzen-cli outline section add abc123 -t "基本信息" --type screening
 mizzen-cli outline question add abc123 s1-uuid \
   --text "你使用过以下哪款产品？" \
   --type multiple_choice \
-  --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
-  --follow-up none
+  --options "+我们的产品,-竞品A,-竞品B,-都没用过"
 
 # 第三步：添加暖场板块
 mizzen-cli outline section add abc123 -t "使用背景" --type flat

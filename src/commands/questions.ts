@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto"
 import { getClient } from "../client"
 import { success, printJson, printData } from "../output"
 import { handleError } from "../errors"
-import type { OutlineResponse, StudyGuideOption, StudyGuideOptionValue } from "../types/api"
+import type { OutlineItem, OutlineResponse, StudyGuideOption, StudyGuideOptionValue } from "../types/api"
 
 /**
  * Parse options string with +/- prefix for approve/reject status.
@@ -48,16 +48,34 @@ export function withStableOptionIds(body: Record<string, unknown>): Record<strin
   }
 }
 
+export function assertFollowUpSupported(body: Record<string, unknown>, currentQuestionType = "open_ended"): void {
+  if (!Object.hasOwn(body, "followUp") && !Object.hasOwn(body, "timeBudget")) return
+
+  const questionType = body["itemType"] === "statement"
+    ? "statement"
+    : typeof body["questionType"] === "string"
+      ? body["questionType"]
+      : currentQuestionType
+  if (questionType !== "open_ended") {
+    throw new Error(`Question type '${questionType}' does not support follow-up`)
+  }
+}
+
 function optionValue(option: StudyGuideOption): StudyGuideOptionValue | null {
   return typeof option === "string" ? null : option
 }
 
-export function findQuestionOptions(outline: OutlineResponse, questionId: string): StudyGuideOption[] {
+export function findQuestion(outline: OutlineResponse, questionId: string): OutlineItem {
   const question = outline.outline
     .flatMap((section) => section.items)
     .find((item) => item.id === questionId)
 
   if (!question) throw new Error(`Question '${questionId}' not found`)
+  return question
+}
+
+export function findQuestionOptions(outline: OutlineResponse, questionId: string): StudyGuideOption[] {
+  const question = findQuestion(outline, questionId)
   if (!question.options) throw new Error(`Question '${questionId}' has no options`)
   return question.options
 }
@@ -111,6 +129,11 @@ function parseStatus(status?: string): StudyGuideOptionValue["status"] {
 async function getQuestionOptions(slug: string, questionId: string): Promise<StudyGuideOption[]> {
   const outline = await getClient().get<OutlineResponse>(`/interviews/${slug}/outline`)
   return findQuestionOptions(outline, questionId)
+}
+
+async function getQuestionType(slug: string, questionId: string): Promise<string> {
+  const outline = await getClient().get<OutlineResponse>(`/interviews/${slug}/outline`)
+  return findQuestion(outline, questionId).questionType ?? "open_ended"
 }
 
 async function saveQuestionOptions(slug: string, questionId: string, options: StudyGuideOption[]): Promise<unknown> {
@@ -267,7 +290,7 @@ export function registerOutlineCommand(program: Command): void {
     .description("Add a question to a section")
     .requiredOption("--text <text>", "Question text")
     .option("--type <type>", "Question type: open_ended, multiple_choice, scale, submission, statement", "open_ended")
-    .option("--follow-up <level>", "Follow-up: none, light, heavy, auto")
+    .option("--follow-up <level>", "Follow-up for open-ended questions: none, light, heavy, auto")
     .option("--options <opts>", "Comma-separated options; UUIDs are generated automatically (e.g. +全职,-学生,其他)")
     .option("--multi-select", "Allow multiple selections (for multiple_choice)")
     .option("--min-label <label>", "Scale min label (for scale type)")
@@ -318,6 +341,8 @@ export function registerOutlineCommand(program: Command): void {
           if (opts.after) body["after"] = opts.after
         }
 
+        assertFollowUpSupported(body)
+
         const data = await client.post(
           `/interviews/${slug}/sections/${sectionId}/questions`,
           withStableOptionIds(body),
@@ -334,7 +359,7 @@ export function registerOutlineCommand(program: Command): void {
     .description("Update a question")
     .option("--text <text>", "New question text")
     .option("--type <type>", "New question type")
-    .option("--follow-up <level>", "New follow-up level")
+    .option("--follow-up <level>", "New follow-up level for an open-ended question")
     .option("--options <opts>", "Replace options with new UUIDs; use --payload to preserve existing option ids")
     .option("--multi-select", "Allow multiple selections")
     .option("--no-multi-select", "Single selection only")
@@ -363,6 +388,13 @@ export function registerOutlineCommand(program: Command): void {
             body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
           }
           if (opts.instructions) body["addInstructions"] = opts.instructions
+        }
+
+        if (Object.hasOwn(body, "followUp") || Object.hasOwn(body, "timeBudget")) {
+          const currentQuestionType = typeof body["questionType"] === "string"
+            ? body["questionType"]
+            : await getQuestionType(slug, questionId)
+          assertFollowUpSupported(body, currentQuestionType)
         }
 
         const data = await client.patch(

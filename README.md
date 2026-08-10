@@ -79,8 +79,7 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline question add <slug> <section-id> \
   --text "你的职业是？" \
   --type multiple_choice \
-  --options "+软件工程师,-教师,-医生,-会计" \
-  --follow-up none
+  --options "+软件工程师,-教师,-医生,-会计"
 
 # 发布并生成分享链接
 mizzen-cli interview publish <slug>

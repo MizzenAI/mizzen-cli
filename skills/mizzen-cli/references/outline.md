@@ -85,15 +85,13 @@ mizzen-cli outline question add <slug> <section-id> \
 mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的工作状态是？" \
   --type multiple_choice \
-  --options "全职上班,兼职,自由职业,学生,退休" \
-  --follow-up none
+  --options "全职上班,兼职,自由职业,学生,退休"
 
 # 添加甄别选择题（+approve / -reject）
 mizzen-cli outline question add <slug> <section-id> \
   --text "你使用过以下哪款产品？" \
   --type multiple_choice \
-  --options "+我们的产品,-竞品A,-竞品B,-都没用过" \
-  --follow-up none
+  --options "+我们的产品,-竞品A,-竞品B,-都没用过"
 
 # 添加多选题
 mizzen-cli outline question add <slug> <section-id> \
@@ -115,8 +113,7 @@ mizzen-cli outline question add <slug> <section-id> \
   --type submission \
   --no-allow-text \
   --accepted-types image \
-  --max-files 3 \
-  --follow-up none
+  --max-files 3
 
 # 添加陈述/过渡语
 mizzen-cli outline question add <slug> <section-id> \
@@ -166,7 +163,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 |------|------|------|
 | `--text <text>` | 是 | 题目内容 |
 | `--type <type>` | 否 | 题型：`open_ended`（默认）/ `multiple_choice` / `scale` / `submission` / `statement` |
-| `--follow-up <level>` | 否 | 追问深度：`none` / `light` / `heavy` |
+| `--follow-up <level>` | 否 | 仅开放题支持：`none` / `light` / `heavy` |
 | `--instructions <text>` | 否 | AI 主持人的追问引导（见 [instructions.md](../rules/instructions.md)） |
 | `--options <list>` | 选择题必填 | 逗号分隔的选项；CLI 自动为每个选项生成 UUID。`+` 前缀=approve，`-` 前缀=reject，无前缀=neutral |
 | `--multi-select` | 否 | 选择题改为多选（默认单选） |
@@ -191,7 +188,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 ### AI Usage Guidance
 
 - **甄别题的 `+/-` 前缀是核心功能**。甄别选项必须在创建时通过 `--options "+通过,-拒绝"` 设置，不需要去网页操作
-- **追问深度选择**：甄别题用 `none`，事实性问题用 `light`，深度探索用 `heavy`。详见 [follow-up.md](../rules/follow-up.md)
+- **追问深度选择**：仅开放题使用 `none` / `light` / `heavy`；结构题省略 `--follow-up`。详见 [follow-up.md](../rules/follow-up.md)
 - **`--instructions` 用于引导 AI 主持人的追问方向**。不是给受访者看的，是给 AI 的指令。详见 [instructions.md](../rules/instructions.md)
 - **选择题默认单选**，需要多选时加 `--multi-select`
 - **题目设计必须遵循方法论**。详见 [question-design.md](../rules/question-design.md) 和 [screening.md](../rules/screening.md)
