@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { checkForUpdate, getCachedUpdate } from "./update-notifier"
+import { checkForUpdate, getCachedUpdate, refreshUpdateState } from "./update-notifier"
 
 describe("update notifier", () => {
   test("returns a notice only when the cached npm version is newer", () => {
@@ -17,7 +17,7 @@ describe("update notifier", () => {
     expect(getCachedUpdate("0.4.0", path)).toBeNull()
   })
 
-  test("waits for the first registry check and caches its result", async () => {
+  test("the detached worker caches the registry result", async () => {
     const path = join(mkdtempSync(join(tmpdir(), "mizzen-update-")), "state.json")
     const originalFetch = globalThis.fetch
     const originalCI = process.env["CI"]
@@ -28,15 +28,20 @@ describe("update notifier", () => {
     )
 
     try {
-      await expect(checkForUpdate("0.2.0", path)).resolves.toEqual({
-        currentVersion: "0.2.0",
-        latestVersion: "0.3.0",
-      })
+      await refreshUpdateState(path)
       expect(getCachedUpdate("0.2.0", path)?.latestVersion).toBe("0.3.0")
     } finally {
       globalThis.fetch = originalFetch
       if (originalCI === undefined) delete process.env["CI"]
       else process.env["CI"] = originalCI
     }
+  })
+
+  test("schedules a refresh without waiting for network", () => {
+    const path = join(mkdtempSync(join(tmpdir(), "mizzen-update-")), "missing.json")
+    let scheduled = false
+
+    expect(checkForUpdate("0.2.0", path, () => { scheduled = true })).toBeNull()
+    expect(scheduled).toBe(true)
   })
 })

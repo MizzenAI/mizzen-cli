@@ -10,7 +10,7 @@ import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
-import { checkForUpdate } from "./update-notifier"
+import { checkForUpdate, runUpdateWorkerIfRequested } from "./update-notifier"
 import { warning } from "./output"
 
 function loadVersion(): string {
@@ -50,17 +50,23 @@ function createProgram(version: string): Command {
   return program
 }
 
-const version = loadVersion()
-const update = await checkForUpdate(version)
-if (update) {
-  warning(
-    `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). `
-    + "Run: npm update -g @mizzenai/cli",
-  )
+async function main(): Promise<void> {
+  if (await runUpdateWorkerIfRequested()) return
+
+  const version = loadVersion()
+  const update = checkForUpdate(version)
+  if (update) {
+    warning(
+      `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). `
+      + "Run: npm update -g @mizzenai/cli",
+    )
+  }
+
+  const program = createProgram(version)
+  await program.parseAsync(process.argv)
 }
 
-const program = createProgram(version)
-program.parseAsync(process.argv).catch((err: unknown) => {
+main().catch((err: unknown) => {
   if (err instanceof Error) {
     process.stderr.write(`Error: ${err.message}\n`)
   } else {

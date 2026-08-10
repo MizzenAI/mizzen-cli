@@ -1,10 +1,12 @@
+import { spawn } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { getConfigDir } from "./config"
 
 const REGISTRY_URL = "https://registry.npmjs.org/@mizzenai/cli/latest"
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
-const FETCH_TIMEOUT_MS = 1_500
+const FETCH_TIMEOUT_MS = 5_000
+const UPDATE_WORKER_ENV = "MIZZEN_CLI_UPDATE_WORKER"
 
 type UpdateState = {
   latestVersion: string
@@ -60,7 +62,8 @@ function writeState(path: string, state: UpdateState): void {
   }
 }
 
-async function refreshState(path: string, previous: UpdateState | null): Promise<UpdateState> {
+export async function refreshUpdateState(path = statePath()): Promise<UpdateState> {
+  const previous = readState(path)
   const state = {
     latestVersion: previous?.latestVersion ?? "",
     checkedAt: Date.now(),
@@ -82,6 +85,28 @@ async function refreshState(path: string, previous: UpdateState | null): Promise
   return state
 }
 
+function startUpdateWorker(): void {
+  const entry = process.argv[1]
+  if (!entry) return
+
+  try {
+    const worker = spawn(process.execPath, [entry], {
+      detached: true,
+      stdio: "ignore",
+      env: { ...process.env, [UPDATE_WORKER_ENV]: "1" },
+    })
+    worker.unref()
+  } catch {
+    // The next CLI invocation will try again.
+  }
+}
+
+export async function runUpdateWorkerIfRequested(): Promise<boolean> {
+  if (process.env[UPDATE_WORKER_ENV] !== "1") return false
+  await refreshUpdateState()
+  return true
+}
+
 export function getCachedUpdate(
   currentVersion: string,
   path = statePath(),
@@ -91,17 +116,17 @@ export function getCachedUpdate(
   return { currentVersion, latestVersion: state.latestVersion }
 }
 
-export async function checkForUpdate(
+export function checkForUpdate(
   currentVersion: string,
   path = statePath(),
-): Promise<UpdateNotice | null> {
+  scheduleRefresh: () => void = startUpdateWorker,
+): UpdateNotice | null {
   if (process.env["CI"] || !parseVersion(currentVersion)) return null
 
-  let state = readState(path)
+  const state = readState(path)
   if (!state || Date.now() - state.checkedAt >= CACHE_TTL_MS) {
-    state = await refreshState(path, state)
+    scheduleRefresh()
   }
 
-  if (!isNewer(state.latestVersion, currentVersion)) return null
-  return { currentVersion, latestVersion: state.latestVersion }
+  return getCachedUpdate(currentVersion, path)
 }
