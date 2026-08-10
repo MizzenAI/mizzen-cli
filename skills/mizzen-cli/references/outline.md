@@ -124,6 +124,10 @@ mizzen-cli outline question add <slug> <section-id> \
   --accepted-types image \
   --max-files 3
 
+# 上传题高级配置必须传完整 submissionConfig
+mizzen-cli outline question add <slug> <section-id> \
+  --payload '{"text":"请提交使用截图并说明原因","questionType":"submission","submissionConfig":{"allowText":true,"allowMedia":true,"requireText":true,"requireMedia":true,"maxFiles":3,"maxFileSizeMb":20,"acceptedTypes":["image"],"required":true}}'
+
 # 添加陈述/过渡语
 mizzen-cli outline question add <slug> <section-id> \
   --text "接下来我们聊聊另一个话题。" \
@@ -157,15 +161,21 @@ mizzen-cli outline question option reorder <slug> <question-id> <option-id-2> <o
 mizzen-cli outline question add <slug> <section-id> \
   --payload '{"text":"...","questionType":"multiple_choice","options":[{"text":"选项","status":"approve"}]}'
 
-# 级联、矩阵、排序和比重题使用完整 raw JSON；options 缺少 ID 时 CLI 自动生成 UUID
+# 级联题：levels 2-10 层；节点 ID、level 和 children 必须组成完整树
 mizzen-cli outline question add <slug> <section-id> \
-  --payload '{"text":"品牌与型号","questionType":"cascading","cascadingConfig":{"dataset_version":1,"levels":[{"key":"level_0","name":"品牌"},{"key":"level_1","name":"型号"}],"tree":[]}}'
+  --payload '{"text":"请选择品牌和型号","questionType":"cascading","cascadingConfig":{"dataset_version":1,"levels":[{"key":"level_0","name":"品牌"},{"key":"level_1","name":"型号"}],"tree":[{"id":"n_a1b2c3","label":"品牌A","level":0,"children":[{"id":"n_d4e5f6","label":"型号1","level":1}]}]}}'
+
+# 矩阵题：行列 ID 由调用方提供，至少 2 行 × 2 列
 mizzen-cli outline question add <slug> <section-id> \
-  --payload '{"text":"请评价","questionType":"matrix","matrixConfig":{"rows":[{"id":"row_1","text":"产品"},{"id":"row_2","text":"服务"}],"columns":[{"id":"col_1","text":"不满意"},{"id":"col_2","text":"满意"}]}}'
+  --payload '{"text":"请评价以下方面","questionType":"matrix","matrixConfig":{"selectionMode":"single_per_row","required":true,"randomizeRowOrder":false,"rows":[{"id":"row_product","text":"产品"},{"id":"row_service","text":"服务"}],"columns":[{"id":"col_bad","text":"不满意"},{"id":"col_good","text":"满意"}]}}'
+
+# 排序题：顶层 options 缺少 ID 时 CLI 自动生成 UUID
 mizzen-cli outline question add <slug> <section-id> \
   --payload '{"text":"请排序","questionType":"ranking","options":[{"text":"价格"},{"text":"品质"}]}'
+
+# 比重题：totalValue 必须是 step 的整数倍
 mizzen-cli outline question add <slug> <section-id> \
-  --payload '{"text":"请分配预算","questionType":"proportion","options":[{"text":"产品"},{"text":"营销"}],"proportionConfig":{"step":5,"totalValue":100}}'
+  --payload '{"text":"请分配预算","questionType":"proportion","options":[{"text":"产品"},{"text":"营销"}],"proportionConfig":{"step":5,"totalValue":100,"unitSuffix":"%","minOptionsWithValue":1,"allowZero":true}}'
 
 # 删除题目
 mizzen-cli outline question delete <slug> <question-id>
@@ -184,18 +194,33 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 | `--type <type>` | 否 | 题型：`open_ended`（默认）/ `multiple_choice` / `scale` / `submission` / `cascading` / `matrix` / `ranking` / `proportion` / `statement` |
 | `--follow-up <level>` | 否 | 仅开放题支持：`none` / `light` / `heavy` / `timed` |
 | `--time-budget <minutes>` | `timed` 必填 | 限时追问的分钟数，范围 0.1–60 |
-| `--instructions <text>` | 否 | AI 主持人的追问引导（见 [instructions.md](../rules/instructions.md)） |
+| `--instructions <text>` | 否 | 仅开放题使用的 AI 追问引导（见 [instructions.md](../rules/instructions.md)） |
 | `--options <list>` | 选择题必填 | 逗号分隔的选项；CLI 自动为每个选项生成 UUID。`+` 前缀=approve，`-` 前缀=reject，无前缀=neutral |
 | `--multi-select` | 否 | 选择题改为多选（默认单选） |
 | `--min-label <text>` | 量表题 | 量表最小值标签 |
 | `--max-label <text>` | 量表题 | 量表最大值标签 |
-| `--min-value <n>` | 量表题 | 量表最小值，默认 0 |
-| `--max-value <n>` | 量表题 | 量表最大值，默认 10 |
+| `--min-value <n>` | 量表题 | 整数量表最小值，默认 0；与最大值共形成 2–11 个点，值域 -100–100 |
+| `--max-value <n>` | 量表题 | 整数量表最大值，默认 10；与最小值一起设置 |
 | `--no-allow-text` | 否 | 上传题禁止文字回复 |
-| `--accepted-types <type>` | 否 | 上传题接受的文件类型：`image` / `video` / `audio` / `file` |
+| `--accepted-types <type>` | 否 | 上传题接受的文件类型：`image` / `video` / `document`，可逗号分隔 |
 | `--max-files <n>` | 否 | 上传题最大文件数 |
 | `--after <uuid>` | 否 | 插入到指定题目之后 |
-| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数）；选项缺少 ID 时自动生成 UUID，已有 ID 保持不变 |
+| `--payload <json>` | 否 | 直接传 JSON body（覆盖其他参数）；仅顶层 `options` 缺少 ID 时自动生成 UUID，已有 ID 保持不变 |
+
+### 题型配置要求
+
+| 题型 | 必要配置 |
+|------|----------|
+| `open_ended` | `followUp`: `none` / `light` / `heavy` / `timed`；只有 `timed` 同时设置 `timeBudget`（0.1–60 分钟） |
+| `multiple_choice` | 至少两个 `options`；多选可配置 `multiSelect`、`minSelect`、`maxSelect`，互斥项在 option 上设置 `isExclusive` |
+| `scale` | 完整 `scaleConfig`: `minLabel`、`maxLabel`、`minValue`、`maxValue` |
+| `submission` | 完整 `submissionConfig`: `allowText`、`allowMedia`、`requireText`、`requireMedia`、`maxFiles`、`maxFileSizeMb`、`acceptedTypes`、`required` |
+| `cascading` | 完整 `cascadingConfig`: `dataset_version`、2–10 个 `levels`、合法 `tree` |
+| `matrix` | 完整 `matrixConfig`: `selectionMode`、`required`、`randomizeRowOrder`、至少两个 `rows` 和两个 `columns` |
+| `ranking` | 至少两个带稳定 ID 的 `options` |
+| `proportion` | 至少两个带稳定 ID 的 `options` 和完整 `proportionConfig` |
+
+常规 submission 参数会生成前端默认完整配置：文字和媒体均允许、文字必填、媒体非必填、最多 5 个文件、单文件 50 MB、接受 image/video/document、题目本身非必填。需要其他组合时使用完整 `submissionConfig` payload。
 
 #### question update
 
@@ -211,11 +236,11 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 
 - **甄别题的 `+/-` 前缀是核心功能**。甄别选项必须在创建时通过 `--options "+通过,-拒绝"` 设置，不需要去网页操作
 - **追问深度选择**：仅开放题使用 `none` / `light` / `heavy` / `timed`；`timed` 同时传 `--time-budget`，结构题省略这两个参数。详见 [follow-up.md](../rules/follow-up.md)
-- **`--instructions` 用于引导 AI 主持人的追问方向**。不是给受访者看的，是给 AI 的指令。详见 [instructions.md](../rules/instructions.md)
+- **`--instructions` 仅用于开放题的追问方向**。它不配置结构题追问，也不等同于可执行条件路由。详见 [instructions.md](../rules/instructions.md)
 - **选择题默认单选**，需要多选时加 `--multi-select`
 - **题目设计必须遵循方法论**。详见 [question-design.md](../rules/question-design.md) 和 [screening.md](../rules/screening.md)
 - **`question-id` 从 `outline show` 获取**，不要猜测或编造 UUID
-- **级联、矩阵、排序、比重题使用 `--payload`**，CLI 原样透传完整题型配置，并自动补齐顶层 `options` 的 UUID
+- **级联、矩阵、排序、比重题使用 `--payload`**。CLI 只自动补齐顶层 `options` 的 UUID；`matrixConfig` 行列 ID 和 `cascadingConfig.tree` 节点 ID 由调用方提供
 - **修改已发布访谈的大纲后，必须重新发布**。完成修改后提醒用户执行 `interview publish <slug>`
 
 ---
