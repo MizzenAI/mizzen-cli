@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { checkForUpdate, getCachedUpdate, refreshUpdateState } from "./update-notifier"
@@ -88,6 +88,56 @@ describe("update notifier", () => {
       })
     } finally {
       server.stop(true)
+      rmSync(home, { recursive: true, force: true })
+    }
+  })
+
+  test("JSON output carries the update notice while text output keeps the warning", async () => {
+    const home = mkdtempSync(join(tmpdir(), "mizzen-update-home-"))
+    const configDir = join(home, ".mizzen")
+    const currentVersion = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf-8")).version
+    const latestVersion = "99.0.0"
+    mkdirSync(configDir)
+    writeFileSync(join(configDir, "update-state.json"), JSON.stringify({
+      latestVersion,
+      checkedAt: Date.now(),
+    }))
+    const env: Record<string, string | undefined> = { ...process.env, HOME: home }
+    delete env["CI"]
+
+    try {
+      const cli = Bun.spawn([process.execPath, "src/index.ts", "config", "show"], {
+        cwd: process.cwd(),
+        env,
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      const stdout = await new Response(cli.stdout).text()
+      const stderr = await new Response(cli.stderr).text()
+
+      expect(await cli.exited).toBe(0)
+      expect(JSON.parse(stdout)["_notice"]).toEqual({
+        update: {
+          current: currentVersion,
+          latest: latestVersion,
+          message: `mizzen-cli ${latestVersion} available, current ${currentVersion}`,
+          command: "npm update -g @mizzenai/cli",
+        },
+      })
+      expect(stderr).toBe("")
+
+      const versionCli = Bun.spawn([process.execPath, "src/index.ts", "--version"], {
+        cwd: process.cwd(),
+        env,
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      expect((await new Response(versionCli.stdout).text()).trim()).toBe(currentVersion)
+      expect(await new Response(versionCli.stderr).text()).toContain(
+        `Warning: mizzen-cli ${latestVersion} is available (current ${currentVersion})`,
+      )
+      expect(await versionCli.exited).toBe(0)
+    } finally {
       rmSync(home, { recursive: true, force: true })
     }
   })

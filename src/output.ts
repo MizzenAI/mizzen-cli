@@ -1,5 +1,22 @@
 import chalk from "chalk"
 import Table from "cli-table3"
+import type { UpdateNotice } from "./update-notifier"
+
+const UPDATE_COMMAND = "npm update -g @mizzenai/cli"
+let pendingUpdate: UpdateNotice | null = null
+let updateNoticeIncluded = false
+
+export function setUpdateNotice(update: UpdateNotice): void {
+  pendingUpdate = update
+}
+
+export function wasUpdateNoticeIncluded(): boolean {
+  return updateNoticeIncluded
+}
+
+export function updateWarningMessage(update: UpdateNotice): string {
+  return `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). Run: ${UPDATE_COMMAND}`
+}
 
 // --- Table output ---
 
@@ -26,6 +43,21 @@ export function printTable(
 // --- JSON output (used directly by commands that emit raw structured data) ---
 
 export function printJson(data: unknown): void {
+  if (pendingUpdate && data !== null && typeof data === "object" && !Array.isArray(data)) {
+    data = {
+      ...data,
+      _notice: {
+        update: {
+          current: pendingUpdate.currentVersion,
+          latest: pendingUpdate.latestVersion,
+          message: `mizzen-cli ${pendingUpdate.latestVersion} available, current ${pendingUpdate.currentVersion}`,
+          command: UPDATE_COMMAND,
+        },
+      },
+    }
+    updateNoticeIncluded = true
+  }
+
   process.stdout.write(JSON.stringify(data, null, 2) + "\n")
 }
 

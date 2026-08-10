@@ -11,7 +11,7 @@ import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
 import { checkForUpdate, runUpdateWorkerIfRequested } from "./update-notifier"
-import { warning } from "./output"
+import { setUpdateNotice, updateWarningMessage, warning, wasUpdateNoticeIncluded } from "./output"
 
 function loadVersion(): string {
   try {
@@ -56,10 +56,10 @@ async function main(): Promise<void> {
   const version = loadVersion()
   const update = checkForUpdate(version)
   if (update) {
-    warning(
-      `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). `
-      + "Run: npm update -g @mizzenai/cli",
-    )
+    setUpdateNotice(update)
+    process.once("exit", () => {
+      if (!wasUpdateNoticeIncluded()) warning(updateWarningMessage(update))
+    })
   }
 
   const program = createProgram(version)
