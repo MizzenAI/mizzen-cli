@@ -59,7 +59,9 @@ mizzen-cli outline question add <slug> <section-id> \
   --text "你对目前使用的产品满意吗？" \
   --type scale \
   --min-label "非常不满意" \
-  --max-label "非常满意"
+  --max-label "非常满意" \
+  --min-value 0 \
+  --max-value 10
 ```
 
 ### submission（上传题）
@@ -132,8 +134,6 @@ mizzen-cli outline question add <slug> <section-id> \
 | 你对推荐算法满意吗？ | 你有没有觉得平台"太懂你了"或者"推的完全不对"的时候？ |
 | 社交媒体对你有影响吗？ | 你有没有刷完之后心情反而变差的经历？那次发生了什么？ |
 
-## 不支持的题型
+## 复杂结构题
 
-以下需要拆分为多道独立题目：
-- 矩阵题（每行拆成一道独立的选择题或量表题）
-- 排序题（改为"你最喜欢哪个？为什么？"的开放题）
+级联题、矩阵题、排序题和比重题使用 `--payload` 传入前端同形的完整 JSON 配置；CLI 会为顶层 `options` 自动补齐 UUID。具体格式见 [outline.md](../references/outline.md)。这些结构题不支持追问。

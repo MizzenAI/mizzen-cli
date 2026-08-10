@@ -81,6 +81,13 @@ mizzen-cli outline question add <slug> <section-id> \
   --follow-up heavy \
   --instructions "追问具体的使用场景和遇到的问题"
 
+# 添加限时开放题（5 分钟）
+mizzen-cli outline question add <slug> <section-id> \
+  --text "请完整讲述你上次购买这类产品的过程。" \
+  --type open_ended \
+  --follow-up timed \
+  --time-budget 5
+
 # 添加选择题（单选）
 mizzen-cli outline question add <slug> <section-id> \
   --text "你目前的工作状态是？" \
@@ -105,7 +112,9 @@ mizzen-cli outline question add <slug> <section-id> \
   --text "你对产品整体的满意程度？" \
   --type scale \
   --min-label "非常不满意" \
-  --max-label "非常满意"
+  --max-label "非常满意" \
+  --min-value 0 \
+  --max-value 10
 
 # 添加上传题
 mizzen-cli outline question add <slug> <section-id> \
@@ -148,6 +157,16 @@ mizzen-cli outline question option reorder <slug> <question-id> <option-id-2> <o
 mizzen-cli outline question add <slug> <section-id> \
   --payload '{"text":"...","questionType":"multiple_choice","options":[{"text":"选项","status":"approve"}]}'
 
+# 级联、矩阵、排序和比重题使用完整 raw JSON；options 缺少 ID 时 CLI 自动生成 UUID
+mizzen-cli outline question add <slug> <section-id> \
+  --payload '{"text":"品牌与型号","questionType":"cascading","cascadingConfig":{"dataset_version":1,"levels":[{"key":"level_0","name":"品牌"},{"key":"level_1","name":"型号"}],"tree":[]}}'
+mizzen-cli outline question add <slug> <section-id> \
+  --payload '{"text":"请评价","questionType":"matrix","matrixConfig":{"rows":[{"id":"row_1","text":"产品"},{"id":"row_2","text":"服务"}],"columns":[{"id":"col_1","text":"不满意"},{"id":"col_2","text":"满意"}]}}'
+mizzen-cli outline question add <slug> <section-id> \
+  --payload '{"text":"请排序","questionType":"ranking","options":[{"text":"价格"},{"text":"品质"}]}'
+mizzen-cli outline question add <slug> <section-id> \
+  --payload '{"text":"请分配预算","questionType":"proportion","options":[{"text":"产品"},{"text":"营销"}],"proportionConfig":{"step":5,"totalValue":100}}'
+
 # 删除题目
 mizzen-cli outline question delete <slug> <question-id>
 
@@ -161,14 +180,17 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
-| `--text <text>` | 是 | 题目内容 |
-| `--type <type>` | 否 | 题型：`open_ended`（默认）/ `multiple_choice` / `scale` / `submission` / `statement` |
-| `--follow-up <level>` | 否 | 仅开放题支持：`none` / `light` / `heavy` |
+| `--text <text>` | 是（使用 `--payload` 时除外） | 题目内容 |
+| `--type <type>` | 否 | 题型：`open_ended`（默认）/ `multiple_choice` / `scale` / `submission` / `cascading` / `matrix` / `ranking` / `proportion` / `statement` |
+| `--follow-up <level>` | 否 | 仅开放题支持：`none` / `light` / `heavy` / `timed` |
+| `--time-budget <minutes>` | `timed` 必填 | 限时追问的分钟数，范围 0.1–60 |
 | `--instructions <text>` | 否 | AI 主持人的追问引导（见 [instructions.md](../rules/instructions.md)） |
 | `--options <list>` | 选择题必填 | 逗号分隔的选项；CLI 自动为每个选项生成 UUID。`+` 前缀=approve，`-` 前缀=reject，无前缀=neutral |
 | `--multi-select` | 否 | 选择题改为多选（默认单选） |
 | `--min-label <text>` | 量表题 | 量表最小值标签 |
 | `--max-label <text>` | 量表题 | 量表最大值标签 |
+| `--min-value <n>` | 量表题 | 量表最小值，默认 0 |
+| `--max-value <n>` | 量表题 | 量表最大值，默认 10 |
 | `--no-allow-text` | 否 | 上传题禁止文字回复 |
 | `--accepted-types <type>` | 否 | 上传题接受的文件类型：`image` / `video` / `audio` / `file` |
 | `--max-files <n>` | 否 | 上传题最大文件数 |
@@ -177,7 +199,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 
 #### question update
 
-与 `add` 相同的参数，只传需要修改的字段。`question-id` 从 `outline show` 获取。
+与 `add` 相同的参数，只传需要修改的字段。`question-id` 从 `outline show` 获取。更新量表配置时四个量表参数必须一起传入；复杂题型使用包含完整配置的 `--payload`。
 
 `question update --options` 会整组替换选项，并为传入选项生成新的 UUID。修改已有选项时应使用 `question option update/delete/reorder`，这些命令按 option ID 操作并保留其他选项的 UUID。不要根据文本猜测或恢复 ID。
 
@@ -188,12 +210,12 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 ### AI Usage Guidance
 
 - **甄别题的 `+/-` 前缀是核心功能**。甄别选项必须在创建时通过 `--options "+通过,-拒绝"` 设置，不需要去网页操作
-- **追问深度选择**：仅开放题使用 `none` / `light` / `heavy`；结构题省略 `--follow-up`。详见 [follow-up.md](../rules/follow-up.md)
+- **追问深度选择**：仅开放题使用 `none` / `light` / `heavy` / `timed`；`timed` 同时传 `--time-budget`，结构题省略这两个参数。详见 [follow-up.md](../rules/follow-up.md)
 - **`--instructions` 用于引导 AI 主持人的追问方向**。不是给受访者看的，是给 AI 的指令。详见 [instructions.md](../rules/instructions.md)
 - **选择题默认单选**，需要多选时加 `--multi-select`
 - **题目设计必须遵循方法论**。详见 [question-design.md](../rules/question-design.md) 和 [screening.md](../rules/screening.md)
 - **`question-id` 从 `outline show` 获取**，不要猜测或编造 UUID
-- **`--payload` 是兜底方案**，只在常规参数无法满足需求时使用
+- **级联、矩阵、排序、比重题使用 `--payload`**，CLI 原样透传完整题型配置，并自动补齐顶层 `options` 的 UUID
 - **修改已发布访谈的大纲后，必须重新发布**。完成修改后提醒用户执行 `interview publish <slug>`
 
 ---

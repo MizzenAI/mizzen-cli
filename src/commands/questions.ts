@@ -66,6 +66,47 @@ export function assertFollowUpSupported(body: Record<string, unknown>, currentQu
   if (questionType !== "open_ended") {
     throw new Error(`Question type '${questionType}' does not support follow-up`)
   }
+
+  const followUp = body["followUp"]
+  if (typeof followUp !== "string" || !["none", "light", "heavy", "timed"].includes(followUp)) {
+    throw new Error("Follow-up must be one of: none, light, heavy, timed")
+  }
+
+  const hasTimeBudget = Object.hasOwn(body, "timeBudget")
+  if (followUp === "timed" && !hasTimeBudget) {
+    throw new Error("Timed follow-up requires --time-budget")
+  }
+  if (followUp !== "timed" && hasTimeBudget) {
+    throw new Error("Time budget requires timed follow-up")
+  }
+  if (hasTimeBudget) body["timeBudget"] = parseTimeBudget(body["timeBudget"])
+}
+
+export function parseTimeBudget(raw: unknown): number {
+  const value = typeof raw === "number" || typeof raw === "string" ? Number(raw) : Number.NaN
+  if (!Number.isFinite(value) || value < 0.1 || value > 60) {
+    throw new Error("Time budget must be between 0.1 and 60 minutes")
+  }
+  return value
+}
+
+type ScaleOptions = { minLabel?: string; maxLabel?: string; minValue?: string; maxValue?: string }
+
+export function buildScaleConfig(opts: ScaleOptions, useDefaults = false): Record<string, unknown> | undefined {
+  const values = [opts.minLabel, opts.maxLabel, opts.minValue, opts.maxValue]
+  if (values.every((value) => value === undefined)) {
+    return useDefaults ? { minLabel: "", maxLabel: "", minValue: 0, maxValue: 10 } : undefined
+  }
+  if (!useDefaults && values.some((value) => value === undefined)) {
+    throw new Error("Scale updates require --min-label, --max-label, --min-value, and --max-value together")
+  }
+
+  const minValue = opts.minValue === undefined ? 0 : Number(opts.minValue)
+  const maxValue = opts.maxValue === undefined ? 10 : Number(opts.maxValue)
+  if (!Number.isInteger(minValue) || !Number.isInteger(maxValue)) {
+    throw new Error("Scale min and max values must be integers")
+  }
+  return { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "", minValue, maxValue }
 }
 
 function optionValue(option: StudyGuideOption): StudyGuideOptionValue | null {
@@ -295,13 +336,16 @@ export function registerOutlineCommand(program: Command): void {
   question
     .command("add <slug> <section-id>")
     .description("Add a question to a section")
-    .requiredOption("--text <text>", "Question text")
-    .option("--type <type>", "Question type: open_ended, multiple_choice, scale, submission, statement", "open_ended")
-    .option("--follow-up <level>", "Follow-up for open-ended questions: none, light, heavy, auto")
+    .option("--text <text>", "Question text (required unless --payload is used)")
+    .option("--type <type>", "Question type: open_ended, multiple_choice, scale, submission, cascading, matrix, ranking, proportion, statement", "open_ended")
+    .option("--follow-up <level>", "Follow-up for open-ended questions: none, light, heavy, timed")
+    .option("--time-budget <minutes>", "Time budget for timed follow-up (0.1-60 minutes)")
     .option("--options <opts>", "Comma-separated options; UUIDs are generated automatically (e.g. +全职,-学生,其他)")
     .option("--multi-select", "Allow multiple selections (for multiple_choice)")
     .option("--min-label <label>", "Scale min label (for scale type)")
     .option("--max-label <label>", "Scale max label (for scale type)")
+    .option("--min-value <n>", "Scale min value (for scale type)")
+    .option("--max-value <n>", "Scale max value (for scale type)")
     .option("--allow-text", "Allow text input (for submission type, default: true)")
     .option("--no-allow-text", "Disable text input (for submission type)")
     .option("--allow-media", "Allow media upload (for submission type, default: true)")
@@ -312,8 +356,8 @@ export function registerOutlineCommand(program: Command): void {
     .option("--after <uuid>", "Insert after this question UUID")
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, sectionId: string, opts: {
-      text: string; type: string; followUp?: string; options?: string;
-      multiSelect?: boolean; minLabel?: string; maxLabel?: string;
+      text?: string; type: string; followUp?: string; timeBudget?: string; options?: string;
+      multiSelect?: boolean; minLabel?: string; maxLabel?: string; minValue?: string; maxValue?: string;
       allowText?: boolean; allowMedia?: boolean; maxFiles?: string; acceptedTypes?: string;
       instructions?: string; after?: string; payload?: string
     }) => {
@@ -324,17 +368,17 @@ export function registerOutlineCommand(program: Command): void {
         if (opts.payload) {
           body = parsePayload(opts.payload)
         } else {
+          if (!opts.text) throw new Error("--text is required unless --payload is used")
           body = {
             text: opts.text,
             questionType: opts.type,
             itemType: opts.type === "statement" ? "statement" : "question",
           }
           if (opts.followUp) body["followUp"] = opts.followUp
+          if (opts.timeBudget !== undefined) body["timeBudget"] = opts.timeBudget
           if (opts.options) body["options"] = parseOptions(opts.options)
           if (opts.multiSelect) body["multiSelect"] = true
-          if (opts.minLabel || opts.maxLabel) {
-            body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
-          }
+          if (opts.type === "scale") body["scaleConfig"] = buildScaleConfig(opts, true)
           if (opts.type === "submission" || opts.allowText !== undefined || opts.allowMedia !== undefined) {
             const subConfig: Record<string, unknown> = {
               allowText: opts.allowText ?? true,
@@ -365,18 +409,22 @@ export function registerOutlineCommand(program: Command): void {
     .command("update <slug> <question-id>")
     .description("Update a question")
     .option("--text <text>", "New question text")
-    .option("--type <type>", "New question type")
-    .option("--follow-up <level>", "New follow-up level for an open-ended question")
+    .option("--type <type>", "New question type: open_ended, multiple_choice, scale, submission, cascading, matrix, ranking, proportion, statement")
+    .option("--follow-up <level>", "New follow-up level for an open-ended question: none, light, heavy, timed")
+    .option("--time-budget <minutes>", "Time budget for timed follow-up (0.1-60 minutes)")
     .option("--options <opts>", "Replace options with new UUIDs; use --payload to preserve existing option ids")
     .option("--multi-select", "Allow multiple selections")
     .option("--no-multi-select", "Single selection only")
     .option("--min-label <label>", "New scale min label")
     .option("--max-label <label>", "New scale max label")
+    .option("--min-value <n>", "New scale min value")
+    .option("--max-value <n>", "New scale max value")
     .option("--instructions <text>", "New interview guide instructions")
     .option("--payload <json>", "Raw JSON body (overrides all other options)")
     .action(async (slug: string, questionId: string, opts: {
-      text?: string; type?: string; followUp?: string; options?: string;
-      multiSelect?: boolean; minLabel?: string; maxLabel?: string; instructions?: string; payload?: string
+      text?: string; type?: string; followUp?: string; timeBudget?: string; options?: string;
+      multiSelect?: boolean; minLabel?: string; maxLabel?: string; minValue?: string; maxValue?: string;
+      instructions?: string; payload?: string
     }) => {
       try {
         const client = getClient()
@@ -387,13 +435,16 @@ export function registerOutlineCommand(program: Command): void {
         } else {
           body = {}
           if (opts.text) body["text"] = opts.text
-          if (opts.type) body["questionType"] = opts.type
+          if (opts.type) {
+            body["questionType"] = opts.type
+            body["itemType"] = opts.type === "statement" ? "statement" : "question"
+          }
           if (opts.followUp) body["followUp"] = opts.followUp
+          if (opts.timeBudget !== undefined) body["timeBudget"] = opts.timeBudget
           if (opts.options) body["options"] = parseOptions(opts.options)
           if (opts.multiSelect !== undefined) body["multiSelect"] = opts.multiSelect
-          if (opts.minLabel || opts.maxLabel) {
-            body["scaleConfig"] = { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "" }
-          }
+          const scaleConfig = buildScaleConfig(opts)
+          if (scaleConfig) body["scaleConfig"] = scaleConfig
           if (opts.instructions) body["addInstructions"] = opts.instructions
         }
 

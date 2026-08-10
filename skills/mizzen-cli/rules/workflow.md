@@ -295,7 +295,9 @@ mizzen-cli outline question add abc123 s3-uuid \
   --text "你对产品整体的满意程度？" \
   --type scale \
   --min-label "非常不满意" \
-  --max-label "非常满意"
+  --max-label "非常满意" \
+  --min-value 0 \
+  --max-value 10
 
 # 第五步：添加收尾板块
 mizzen-cli outline section add abc123 -t "总结" --type flat

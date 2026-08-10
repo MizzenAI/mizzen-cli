@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import {
   assertFollowUpSupported,
+  buildScaleConfig,
   deleteOptionById,
   findQuestion,
   findQuestionOptions,
@@ -129,16 +130,38 @@ describe("stable option edits", () => {
 })
 
 describe("question follow-up", () => {
-  test("allows follow-up only for open-ended questions", () => {
+  test("validates open-ended follow-up and rejects it for structured questions", () => {
     expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "heavy" })).not.toThrow()
-    expect(() => assertFollowUpSupported({ questionType: "scale", followUp: "none" })).toThrow(
-      "Question type 'scale' does not support follow-up",
+    expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "timed", timeBudget: 5 })).not.toThrow()
+    expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "timed" })).toThrow(
+      "requires --time-budget",
     )
-    expect(() => assertFollowUpSupported({ timeBudget: 2 }, "multiple_choice")).toThrow(
-      "Question type 'multiple_choice' does not support follow-up",
+    expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "auto" })).toThrow(
+      "none, light, heavy, timed",
     )
+    expect(() => assertFollowUpSupported({ questionType: "open_ended", followUp: "heavy", timeBudget: 5 })).toThrow(
+      "requires timed follow-up",
+    )
+    for (const questionType of ["multiple_choice", "scale", "submission", "cascading", "matrix", "ranking", "proportion"]) {
+      expect(() => assertFollowUpSupported({ questionType, followUp: "none" })).toThrow(
+        `Question type '${questionType}' does not support follow-up`,
+      )
+    }
     expect(() => assertFollowUpSupported({ itemType: "statement", followUp: "none" })).toThrow(
       "Question type 'statement' does not support follow-up",
     )
+  })
+})
+
+describe("scale config", () => {
+  test("builds a complete config and rejects partial updates", () => {
+    expect(buildScaleConfig({}, true)).toEqual({ minLabel: "", maxLabel: "", minValue: 0, maxValue: 10 })
+    expect(buildScaleConfig({ minLabel: "低", maxLabel: "高", minValue: "1", maxValue: "7" })).toEqual({
+      minLabel: "低",
+      maxLabel: "高",
+      minValue: 1,
+      maxValue: 7,
+    })
+    expect(() => buildScaleConfig({ minLabel: "低" })).toThrow("require --min-label, --max-label")
   })
 })
