@@ -43,22 +43,35 @@ export function printTable(
 // --- JSON output (used directly by commands that emit raw structured data) ---
 
 export function printJson(data: unknown): void {
-  if (pendingUpdate && data !== null && typeof data === "object" && !Array.isArray(data)) {
-    data = {
-      ...data,
-      _notice: {
-        update: {
-          current: pendingUpdate.currentVersion,
-          latest: pendingUpdate.latestVersion,
-          message: `mizzen-cli ${pendingUpdate.latestVersion} available, current ${pendingUpdate.currentVersion}`,
-          command: UPDATE_COMMAND,
-        },
-      },
-    }
-    updateNoticeIncluded = true
+  process.stdout.write(JSON.stringify(data, null, 2) + "\n")
+}
+
+export function printJsonDocument(data: unknown): void {
+  if (!pendingUpdate || data === null || typeof data !== "object" || Array.isArray(data)) {
+    printJson(data)
+    return
   }
 
-  process.stdout.write(JSON.stringify(data, null, 2) + "\n")
+  const existingNotice = "_notice" in data ? data._notice : undefined
+  if (existingNotice !== undefined
+    && (existingNotice === null || typeof existingNotice !== "object" || Array.isArray(existingNotice))) {
+    printJson(data)
+    return
+  }
+
+  printJson({
+    ...data,
+    _notice: {
+      ...existingNotice,
+      update: {
+        current: pendingUpdate.currentVersion,
+        latest: pendingUpdate.latestVersion,
+        message: `mizzen-cli ${pendingUpdate.latestVersion} available, current ${pendingUpdate.currentVersion}`,
+        command: UPDATE_COMMAND,
+      },
+    },
+  })
+  updateNoticeIncluded = true
 }
 
 // --- Default list/key-value output (table format) ---
@@ -67,7 +80,7 @@ export function printData(
   headers: string[],
   rows: string[][],
   // jsonData is accepted for forward-compat but not currently rendered;
-  // commands that want JSON output should call printJson() directly.
+  // commands that want complete JSON output should call printJsonDocument() directly.
   _jsonData?: unknown,
 ): void {
   printTable(headers, rows)

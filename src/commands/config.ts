@@ -1,6 +1,6 @@
 import { Command } from "commander"
 import { loadConfig, updateConfig, resetConfig } from "../config"
-import { success, printJson, printKeyValue } from "../output"
+import { success, printJsonDocument, printKeyValue } from "../output"
 import { handleError } from "../errors"
 
 export function registerConfigCommand(program: Command): void {
@@ -13,7 +13,7 @@ export function registerConfigCommand(program: Command): void {
     .description("Show current configuration")
     .action(() => {
       const cfg = loadConfig()
-      printJson(cfg)
+      printJsonDocument(cfg)
     })
 
   config

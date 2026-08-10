@@ -102,20 +102,56 @@ describe("update notifier", () => {
       latestVersion,
       checkedAt: Date.now(),
     }))
-    const env: Record<string, string | undefined> = { ...process.env, HOME: home }
+    const server = Bun.serve({
+      port: 0,
+      fetch(request) {
+        if (new URL(request.url).pathname.endsWith("/answers")) {
+          return Response.json({
+            readable_id: 1,
+            cleaned_at: null,
+            questions: [],
+            _notice: { server: "preserved" },
+          })
+        }
+        return Response.json({
+          id: "insight-1",
+          version: 1,
+          status: "completed",
+          participant_count: 1,
+          report_data: { title: "Report" },
+          generated_at: null,
+        })
+      },
+    })
+    writeFileSync(join(configDir, "config.json"), JSON.stringify({
+      api: { base_url: server.url.toString(), site_url: "https://mizzen.top", timeout: 5 },
+    }))
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      HOME: home,
+      MIZZEN_API_KEY: "mk_test_key",
+    }
     delete env["CI"]
 
-    try {
-      const cli = Bun.spawn([process.execPath, "src/index.ts", "config", "show"], {
+    async function runCli(args: string[]) {
+      const cli = Bun.spawn([process.execPath, "src/index.ts", ...args], {
         cwd: process.cwd(),
         env,
         stdout: "pipe",
         stderr: "pipe",
       })
-      const stdout = await new Response(cli.stdout).text()
-      const stderr = await new Response(cli.stderr).text()
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(cli.stdout).text(),
+        new Response(cli.stderr).text(),
+        cli.exited,
+      ])
+      return { stdout, stderr, exitCode }
+    }
 
-      expect(await cli.exited).toBe(0)
+    try {
+      const { stdout, stderr, exitCode } = await runCli(["config", "show"])
+
+      expect(exitCode).toBe(0)
       expect(JSON.parse(stdout)["_notice"]).toEqual({
         update: {
           current: currentVersion,
@@ -126,18 +162,35 @@ describe("update notifier", () => {
       })
       expect(stderr).toBe("")
 
-      const versionCli = Bun.spawn([process.execPath, "src/index.ts", "--version"], {
-        cwd: process.cwd(),
-        env,
-        stdout: "pipe",
-        stderr: "pipe",
+      const answers = await runCli(["conversation", "answers", "study", "1"])
+      expect(answers.exitCode).toBe(0)
+      expect(JSON.parse(answers.stdout)["_notice"]).toEqual({
+        server: "preserved",
+        update: {
+          current: currentVersion,
+          latest: latestVersion,
+          message: `mizzen-cli ${latestVersion} available, current ${currentVersion}`,
+          command: "npm update -g @mizzenai/cli",
+        },
       })
-      expect((await new Response(versionCli.stdout).text()).trim()).toBe(currentVersion)
-      expect(await new Response(versionCli.stderr).text()).toContain(
+      expect(answers.stderr).toBe("")
+
+      const insight = await runCli(["insight", "get", "study"])
+      expect(insight.exitCode).toBe(0)
+      expect(insight.stdout).toContain("Report data:")
+      expect(insight.stdout).not.toContain('"_notice"')
+      expect(insight.stderr).toContain(
         `Warning: mizzen-cli ${latestVersion} is available (current ${currentVersion})`,
       )
-      expect(await versionCli.exited).toBe(0)
+
+      const version = await runCli(["--version"])
+      expect(version.stdout.trim()).toBe(currentVersion)
+      expect(version.stderr).toContain(
+        `Warning: mizzen-cli ${latestVersion} is available (current ${currentVersion})`,
+      )
+      expect(version.exitCode).toBe(0)
     } finally {
+      server.stop(true)
       rmSync(home, { recursive: true, force: true })
     }
   })
