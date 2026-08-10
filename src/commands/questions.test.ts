@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 import {
   assertFollowUpSupported,
   buildScaleConfig,
+  buildSubmissionConfig,
   deleteOptionById,
   findQuestion,
   findQuestionOptions,
@@ -163,5 +164,22 @@ describe("scale config", () => {
       maxValue: 7,
     })
     expect(() => buildScaleConfig({ minLabel: "低" })).toThrow("require --min-label, --max-label")
+  })
+})
+
+test("submission config matches the frontend contract", () => {
+  expect(buildSubmissionConfig({})).toEqual({
+    allowText: true,
+    allowMedia: true,
+    requireText: true,
+    requireMedia: false,
+    maxFiles: 5,
+    maxFileSizeMb: 50,
+    acceptedTypes: ["image", "video", "document"],
+    required: false,
+  })
+  expect(buildSubmissionConfig({ allowText: false })).toMatchObject({
+    allowText: false,
+    requireText: false,
   })
 })
