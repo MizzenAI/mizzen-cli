@@ -10,6 +10,8 @@ import { registerInterviewsCommand } from "./commands/interviews"
 import { registerConversationsCommand } from "./commands/conversations"
 import { registerOutlineCommand } from "./commands/questions"
 import { registerInsightsCommand } from "./commands/insights"
+import { checkForUpdate, runUpdateWorkerIfRequested } from "./update-notifier"
+import { warning } from "./output"
 
 function loadVersion(): string {
   try {
@@ -30,8 +32,7 @@ function buildStatusLine(): string {
   return key ? `Authenticated (${maskApiKey(key)})` : "Not configured"
 }
 
-function createProgram(): Command {
-  const version = loadVersion()
+function createProgram(version: string): Command {
   setClientVersion(version)
 
   const program = new Command()
@@ -49,8 +50,23 @@ function createProgram(): Command {
   return program
 }
 
-const program = createProgram()
-program.parseAsync(process.argv).catch((err: unknown) => {
+async function main(): Promise<void> {
+  if (await runUpdateWorkerIfRequested()) return
+
+  const version = loadVersion()
+  const update = checkForUpdate(version)
+  if (update) {
+    warning(
+      `mizzen-cli ${update.latestVersion} is available (current ${update.currentVersion}). `
+      + "Run: npm update -g @mizzenai/cli",
+    )
+  }
+
+  const program = createProgram(version)
+  await program.parseAsync(process.argv)
+}
+
+main().catch((err: unknown) => {
   if (err instanceof Error) {
     process.stderr.write(`Error: ${err.message}\n`)
   } else {
