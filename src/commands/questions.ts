@@ -109,6 +109,27 @@ export function buildScaleConfig(opts: ScaleOptions, useDefaults = false): Recor
   return { minLabel: opts.minLabel ?? "", maxLabel: opts.maxLabel ?? "", minValue, maxValue }
 }
 
+type SubmissionOptions = {
+  allowText?: boolean
+  allowMedia?: boolean
+  maxFiles?: string
+  acceptedTypes?: string
+}
+
+export function buildSubmissionConfig(opts: SubmissionOptions): Record<string, unknown> {
+  const allowText = opts.allowText ?? true
+  return {
+    allowText,
+    allowMedia: opts.allowMedia ?? true,
+    requireText: allowText,
+    requireMedia: false,
+    maxFiles: opts.maxFiles ? parseInt(opts.maxFiles, 10) : 5,
+    maxFileSizeMb: 50,
+    acceptedTypes: opts.acceptedTypes ? opts.acceptedTypes.split(",").map((type) => type.trim()) : ["image", "video", "document"],
+    required: false,
+  }
+}
+
 function optionValue(option: StudyGuideOption): StudyGuideOptionValue | null {
   return typeof option === "string" ? null : option
 }
@@ -380,13 +401,7 @@ export function registerOutlineCommand(program: Command): void {
           if (opts.multiSelect) body["multiSelect"] = true
           if (opts.type === "scale") body["scaleConfig"] = buildScaleConfig(opts, true)
           if (opts.type === "submission" || opts.allowText !== undefined || opts.allowMedia !== undefined) {
-            const subConfig: Record<string, unknown> = {
-              allowText: opts.allowText ?? true,
-              allowMedia: opts.allowMedia ?? true,
-              maxFiles: opts.maxFiles ? parseInt(opts.maxFiles, 10) : 5,
-              acceptedTypes: opts.acceptedTypes ? opts.acceptedTypes.split(",").map(t => t.trim()) : ["image", "video", "document"],
-            }
-            body["submissionConfig"] = subConfig
+            body["submissionConfig"] = buildSubmissionConfig(opts)
           }
           if (opts.instructions) body["addInstructions"] = opts.instructions
           if (opts.after) body["after"] = opts.after
