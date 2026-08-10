@@ -22,4 +22,4 @@ jobs:
                   llm-model: openrouter/openai/gpt-5.6-terra
                   llm-base-url: ${{ secrets.LLM_BASE_URL }}
                   llm-api-key: ${{ secrets.LLM_API_KEY }}
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  github-token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
