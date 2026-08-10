@@ -22,6 +22,34 @@ function getPreviewUrl(slug: string): string {
   return `${getSiteUrl()}/interview/${slug}/create/edit#questions`
 }
 
+type InterviewConfigOptions = {
+  mode?: string
+  talkMode?: string
+  tts?: boolean
+}
+
+export function buildInterviewConfig(
+  opts: InterviewConfigOptions,
+  currentTts?: Interview["config"]["tts"],
+): Record<string, unknown> {
+  const config: Record<string, unknown> = {}
+  if (opts.mode) config["interviewMode"] = opts.mode
+  if (opts.talkMode) config["talkMode"] = opts.talkMode
+  if (opts.tts !== undefined) {
+    if (
+      currentTts !== undefined
+      && currentTts !== null
+      && typeof currentTts !== "boolean"
+      && (typeof currentTts !== "object" || Array.isArray(currentTts))
+    ) {
+      throw new Error("Interview TTS config must be an object")
+    }
+    const existingTts = currentTts && typeof currentTts === "object" ? currentTts : {}
+    config["tts"] = { ...existingTts, enabled: opts.tts }
+  }
+  return config
+}
+
 export function registerInterviewsCommand(program: Command): void {
   const interviews = program
     .command("interview")
@@ -114,11 +142,7 @@ export function registerInterviewsCommand(program: Command): void {
           title: opts.title,
           userLanguage: opts.language,
           allowAnonymous: opts.allowAnonymous,
-          config: {
-            interviewMode: opts.mode,
-            talkMode: opts.talkMode,
-            ...(opts.tts ? { tts: true } : {}),
-          },
+          config: buildInterviewConfig(opts),
         }
         if (opts.externalTitle) body["externalTitle"] = opts.externalTitle
         if (opts.description) body["description"] = opts.description
@@ -184,11 +208,10 @@ export function registerInterviewsCommand(program: Command): void {
           body["availableLanguages"] = opts.availableLanguages.split(",").map(s => s.trim()).filter(Boolean)
         }
         if (opts.mode || opts.talkMode || opts.tts !== undefined) {
-          const config: Record<string, unknown> = {}
-          if (opts.mode) config["interviewMode"] = opts.mode
-          if (opts.talkMode) config["talkMode"] = opts.talkMode
-          if (opts.tts !== undefined) config["tts"] = opts.tts
-          body["config"] = config
+          const currentTts = opts.tts === undefined
+            ? undefined
+            : (await client.get<Interview>(`/interviews/${slug}`)).config.tts
+          body["config"] = buildInterviewConfig(opts, currentTts)
         }
 
         const data = await client.put<Interview>(`/interviews/${slug}`, body)

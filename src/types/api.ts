@@ -12,6 +12,9 @@ export interface Interview {
   participant_count: number
   created_at: string | null
   published_at: string | null
+  config: {
+    tts?: unknown
+  }
 }
 
 export interface InterviewListResponse {
