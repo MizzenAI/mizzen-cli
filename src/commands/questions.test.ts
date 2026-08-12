@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import {
   assertFollowUpSupported,
+  buildQuestionDiscriminants,
   buildScaleConfig,
   buildSubmissionConfig,
   deleteOptionById,
@@ -167,19 +168,47 @@ describe("scale config", () => {
   })
 })
 
-test("submission config matches the frontend contract", () => {
-  expect(buildSubmissionConfig({})).toEqual({
-    allowText: true,
-    allowMedia: true,
-    requireText: true,
-    requireMedia: false,
-    maxFiles: 5,
-    maxFileSizeMb: 50,
-    acceptedTypes: ["image", "video", "document"],
-    required: false,
+describe("question discriminants", () => {
+  test("omits questionType for statements", () => {
+    expect(buildQuestionDiscriminants("statement")).toEqual({ itemType: "statement" })
+    expect(buildQuestionDiscriminants("open_ended")).toEqual({
+      itemType: "question",
+      questionType: "open_ended",
+    })
   })
-  expect(buildSubmissionConfig({ allowText: false })).toMatchObject({
-    allowText: false,
-    requireText: false,
+})
+
+describe("submission config", () => {
+  test("matches the frontend contract", () => {
+    expect(buildSubmissionConfig("submission", {})).toEqual({
+      allowText: true,
+      allowMedia: true,
+      requireText: true,
+      requireMedia: false,
+      maxFiles: 5,
+      maxFileSizeMb: 50,
+      acceptedTypes: ["image", "video", "document"],
+      required: false,
+    })
+    expect(buildSubmissionConfig("submission", { allowText: false })).toMatchObject({
+      allowText: false,
+      requireText: false,
+    })
+  })
+
+  test("rejects submission-only options for other question types", () => {
+    expect(buildSubmissionConfig("open_ended", {})).toBeUndefined()
+    expect(() => buildSubmissionConfig("open_ended", { maxFiles: "3" })).toThrow(
+      "Submission options require --type submission",
+    )
+  })
+
+  test("requires max-files to be a positive integer", () => {
+    expect(() => buildSubmissionConfig("submission", { maxFiles: "3files" })).toThrow(
+      "Max files must be a positive integer",
+    )
+    expect(() => buildSubmissionConfig("submission", { maxFiles: "0" })).toThrow(
+      "Max files must be a positive integer",
+    )
   })
 })
