@@ -55,6 +55,9 @@ export function registerConversationsCommand(program: Command): void {
           ["Active Time", formatDuration(data.active_time_seconds ?? data.duration_seconds)],
           ["Started", data.started_at?.slice(0, 16).replace("T", " ") ?? "-"],
           ["Ended", data.ended_at?.slice(0, 16).replace("T", " ") ?? "-"],
+          ["Quality Score", data.conversation_quality_score == null ? "-" : `${data.conversation_quality_score}/5`],
+          ["User Profile", data.user_profile ? JSON.stringify(data.user_profile) : "-"],
+          ["Summary", data.summary || "-"],
           ["Messages", String(data.messages?.length ?? 0)],
         ])
       } catch (err) {
