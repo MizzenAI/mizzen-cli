@@ -224,7 +224,7 @@ mizzen-cli outline question reorder <slug> <section-id> <uuid1> <uuid2> <uuid3>
 
 #### question update
 
-与 `add` 相同的参数，只传需要修改的字段。`question-id` 从 `outline show` 获取。更新量表配置时四个量表参数必须一起传入；复杂题型使用包含完整配置的 `--payload`。
+只传需要修改的字段，`question-id` 从 `outline show` 获取。更新量表配置时四个量表参数必须一起传入。切换为 submission 或修改其配置时，使用包含完整八字段 `submissionConfig` 的 `--payload`；update 不接受局部 submission 配置。
 
 `question update --options` 会整组替换选项，并为传入选项生成新的 UUID。修改已有选项时应使用 `question option update/delete/reorder`，这些命令按 option ID 操作并保留其他选项的 UUID。不要根据文本猜测或恢复 ID。
 

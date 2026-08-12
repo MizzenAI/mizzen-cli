@@ -92,6 +92,12 @@ export function parseTimeBudget(raw: unknown): number {
 
 type ScaleOptions = { minLabel?: string; maxLabel?: string; minValue?: string; maxValue?: string }
 
+export function buildQuestionDiscriminants(questionType: string): Record<string, string> {
+  return questionType === "statement"
+    ? { itemType: "statement" }
+    : { itemType: "question", questionType }
+}
+
 export function buildScaleConfig(opts: ScaleOptions, useDefaults = false): Record<string, unknown> | undefined {
   const values = [opts.minLabel, opts.maxLabel, opts.minValue, opts.maxValue]
   if (values.every((value) => value === undefined)) {
@@ -116,14 +122,31 @@ type SubmissionOptions = {
   acceptedTypes?: string
 }
 
-export function buildSubmissionConfig(opts: SubmissionOptions): Record<string, unknown> {
+export function buildSubmissionConfig(
+  questionType: string,
+  opts: SubmissionOptions,
+): Record<string, unknown> | undefined {
+  const hasSubmissionOptions = opts.allowText !== undefined
+    || opts.allowMedia !== undefined
+    || opts.maxFiles !== undefined
+    || opts.acceptedTypes !== undefined
+  if (questionType !== "submission") {
+    if (hasSubmissionOptions) throw new Error("Submission options require --type submission")
+    return undefined
+  }
+
   const allowText = opts.allowText ?? true
+  const maxFiles = opts.maxFiles === undefined ? 5 : Number(opts.maxFiles)
+  if (!Number.isInteger(maxFiles) || maxFiles < 1) {
+    throw new Error("Max files must be a positive integer")
+  }
+
   return {
     allowText,
     allowMedia: opts.allowMedia ?? true,
     requireText: allowText,
     requireMedia: false,
-    maxFiles: opts.maxFiles ? parseInt(opts.maxFiles, 10) : 5,
+    maxFiles,
     maxFileSizeMb: 50,
     acceptedTypes: opts.acceptedTypes ? opts.acceptedTypes.split(",").map((type) => type.trim()) : ["image", "video", "document"],
     required: false,
@@ -392,17 +415,15 @@ export function registerOutlineCommand(program: Command): void {
           if (!opts.text) throw new Error("--text is required unless --payload is used")
           body = {
             text: opts.text,
-            questionType: opts.type,
-            itemType: opts.type === "statement" ? "statement" : "question",
+            ...buildQuestionDiscriminants(opts.type),
           }
           if (opts.followUp) body["followUp"] = opts.followUp
           if (opts.timeBudget !== undefined) body["timeBudget"] = opts.timeBudget
           if (opts.options) body["options"] = parseOptions(opts.options)
           if (opts.multiSelect) body["multiSelect"] = true
           if (opts.type === "scale") body["scaleConfig"] = buildScaleConfig(opts, true)
-          if (opts.type === "submission" || opts.allowText !== undefined || opts.allowMedia !== undefined) {
-            body["submissionConfig"] = buildSubmissionConfig(opts)
-          }
+          const submissionConfig = buildSubmissionConfig(opts.type, opts)
+          if (submissionConfig) body["submissionConfig"] = submissionConfig
           if (opts.instructions) body["addInstructions"] = opts.instructions
           if (opts.after) body["after"] = opts.after
         }
@@ -451,8 +472,10 @@ export function registerOutlineCommand(program: Command): void {
           body = {}
           if (opts.text) body["text"] = opts.text
           if (opts.type) {
-            body["questionType"] = opts.type
-            body["itemType"] = opts.type === "statement" ? "statement" : "question"
+            if (opts.type === "submission") {
+              throw new Error("Changing to submission requires --payload with a complete submissionConfig")
+            }
+            Object.assign(body, buildQuestionDiscriminants(opts.type))
           }
           if (opts.followUp) body["followUp"] = opts.followUp
           if (opts.timeBudget !== undefined) body["timeBudget"] = opts.timeBudget
