@@ -8,18 +8,9 @@ on:
 permissions:
     contents: read
     pull-requests: write
+    issues: write
 
 jobs:
-    pr-review:
-        if: github.event.requested_reviewer.login == 'mizzenbot'
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - name: Run PR Review
-              uses: OpenHands/extensions/plugins/pr-review@279ece7e6e678dc1edee98da75a2cf05df2dbfa3
-              with:
-                  extensions-version: 279ece7e6e678dc1edee98da75a2cf05df2dbfa3
-                  llm-model: openrouter/openai/gpt-5.6-terra
-                  llm-base-url: ${{ secrets.LLM_BASE_URL }}
-                  llm-api-key: ${{ secrets.LLM_API_KEY }}
-                  github-token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
+  pr-review:
+    uses: MizzenAI/gh-actions/.github/workflows/pr-review.yml@24cf1684e726358e4640f3170adb9e51e80538b9
+    secrets: inherit
