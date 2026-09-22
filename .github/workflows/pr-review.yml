@@ -39,7 +39,7 @@ jobs:
         if: steps.check-review.outputs.count == '0'
         with:
           repository: MizzenAI/gh-actions
-          ref: 89012d8455439262a3105f7ea7353abcd52699fc
+          ref: d40c360e419952a1694100ec46a983827b76a8cc
           path: workflow-source
           token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
           persist-credentials: false
