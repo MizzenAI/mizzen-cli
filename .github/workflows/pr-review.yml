@@ -20,31 +20,6 @@ jobs:
       group: pr-review-${{ github.repository }}-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          repository: MizzenAI/gh-actions
-          ref: 89012d8455439262a3105f7ea7353abcd52699fc
-          path: workflow-source
-          token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
-          persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          repository: OpenHands/extensions
-          ref: 279ece7e6e678dc1edee98da75a2cf05df2dbfa3
-          path: extensions
-          persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-          path: pr-repo
-          persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.12"
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e
-        with:
-          enable-cache: false
       - name: Check existing review for current commit
         id: check-review
         env:
@@ -60,6 +35,36 @@ jobs:
               (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "COMMENTED")
             )] | length')
           echo "count=$count" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.check-review.outputs.count == '0'
+        with:
+          repository: MizzenAI/gh-actions
+          ref: 89012d8455439262a3105f7ea7353abcd52699fc
+          path: workflow-source
+          token: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.check-review.outputs.count == '0'
+        with:
+          repository: OpenHands/extensions
+          ref: 279ece7e6e678dc1edee98da75a2cf05df2dbfa3
+          path: extensions
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.check-review.outputs.count == '0'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          path: pr-repo
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: steps.check-review.outputs.count == '0'
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e
+        if: steps.check-review.outputs.count == '0'
+        with:
+          enable-cache: false
       - name: Run PR Review
         if: steps.check-review.outputs.count == '0'
         env:
