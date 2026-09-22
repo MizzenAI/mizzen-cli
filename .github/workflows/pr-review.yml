@@ -45,7 +45,23 @@ jobs:
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e
         with:
           enable-cache: false
+      - name: Check existing review for current commit
+        id: check-review
+        env:
+          GH_TOKEN: ${{ secrets.MIZZENBOT_GITHUB_PAT }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          count=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" --paginate |
+            jq -s --arg head "$HEAD_SHA" '[.[][] | select(
+              .user.login == "mizzenbot" and .commit_id == $head and
+              (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "COMMENTED")
+            )] | length')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
       - name: Run PR Review
+        if: steps.check-review.outputs.count == '0'
         env:
           UV_INDEX_URL: https://pypi.org/simple
           UV_NO_CONFIG: "true"
