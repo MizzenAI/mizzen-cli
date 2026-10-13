@@ -58,6 +58,8 @@ npx skills add MizzenAI/mizzen-cli -a cursor -g
 
 Agent 会按方法论分步引导：理解目标 → 设计大纲 → 确认 → 创建 → 发布 → 生成分享链接。
 
+导入已有大纲时，`--description` 只填写受访者开始页可见的简介；原稿没有对外简介就省略。内部研究背景放 `--background`，内部备注、招募待确认事项和主持人执行规则不得混入对外简介、欢迎语或题目正文。
+
 ### 手动使用 CLI
 
 ```bash
