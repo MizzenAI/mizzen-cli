@@ -2,6 +2,12 @@
 
 创建、查看、修改、删除、发布、分享访谈项目。
 
+## 导入内容的字段边界
+
+- `--description` 是受访者开始页展示的简介，只填写适合公开给受访者的内容；原稿未提供对外简介时省略此参数。
+- `--background` 保存内部研究背景，不在受访者开始页展示。不要把整份原稿、内部备注、招募待确认事项或执行规则复制到 `--description`、欢迎语或题目正文。
+- 开放题的追问指引使用 `--instructions`，见 [instructions.md](../rules/instructions.md)。条件展示和跳转需要独立的结构化条件逻辑，不能靠把规则放进简介或背景来完成配置。
+
 ## Recommended Commands
 
 ```bash
@@ -63,7 +69,8 @@ mizzen-cli interview stats <slug>
 |------|------|------|
 | `-t, --title <text>` | 是 | 内部标题（研究者管理用，受访者看不到） |
 | `--external-title <text>` | 否 | 对外标题（受访者看到的）。不传则等于内部标题 |
-| `--background <text>` | 否 | 研究背景 |
+| `--description <text>` | 否 | 对外简介，受访者开始页可见；不包含内部备注或执行规则 |
+| `--background <text>` | 否 | 内部研究背景，不在受访者开始页展示 |
 | `--goal <text>` | 否 | 研究目标 |
 | `--welcome <text>` | 否 | 欢迎语（受访者进入时看到） |
 | `--closing <text>` | 否 | 结束语（访谈结束时显示） |
