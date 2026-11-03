@@ -11,7 +11,7 @@ mizzen-cli conversation list <slug>
 # 按状态筛选（completed / in_progress / screened_out / failed）
 mizzen-cli conversation list <slug> --status completed
 
-# 查看对话详情（含消息列表）
+# 查看对话详情（含质量评分、用户画像、要点总结和消息数量）
 mizzen-cli conversation get <slug> <id>
 
 # 获取逐字稿（纯文本格式）
@@ -62,7 +62,7 @@ mizzen-cli conversation unhide <slug> <id>
 1. 先列出对话：`mizzen-cli conversation list <slug>`
 2. 找到目标对话的 `readable_id`（#列的数字）
 3. 根据需要选择查看方式：
-   - 查看详情和消息：`mizzen-cli conversation get <slug> <id>`
+   - 查看质量评分、用户画像、要点总结和消息数量：`mizzen-cli conversation get <slug> <id>`
    - 获取纯文本逐字稿：`mizzen-cli conversation transcript <slug> <id>`
    - 获取结构化数据：`mizzen-cli conversation answers <slug> <id>`
 
@@ -76,7 +76,7 @@ mizzen-cli conversation unhide <slug> <id>
 
 - **先 `list` 再 `get`**。必须先用 `list` 获取对话的 `readable_id`，再用 `get`/`transcript`/`answers` 查看详情。不要猜测 ID
 - **`transcript` vs `answers`**：`transcript` 返回原始对话逐字稿（纯文本），`answers` 返回经过 AI 清洗的结构化回答数据（按题目组织）
-- **`get` 返回消息列表**，包含每条消息的 role、content、timestamp
+- **`get` 返回对话详情**，包括质量评分、用户画像、要点总结和消息数量；未完成清洗时，前三项为空
 - **对话状态含义**：
   - `completed`：正常完成的对话
   - `in_progress`：进行中的对话

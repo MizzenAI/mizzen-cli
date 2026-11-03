@@ -64,6 +64,9 @@ export interface Conversation {
   duration_seconds: number | null
   active_time_seconds: number | null
   has_cleaned_data?: boolean
+  summary?: string | null
+  user_profile?: Record<string, unknown> | null
+  conversation_quality_score?: number | null
   messages?: Message[]
 }
 
