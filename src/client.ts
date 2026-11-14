@@ -5,9 +5,14 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     public readonly detail: string,
+    public readonly details?: Record<string, unknown>,
   ) {
     super(detail)
     this.name = "ApiError"
+  }
+
+  get code(): string | undefined {
+    return typeof this.details?.["code"] === "string" ? this.details["code"] : undefined
   }
 }
 
@@ -96,6 +101,7 @@ export class MizzenClient {
 
     if (!response.ok) {
       let detail = response.statusText
+      let details: Record<string, unknown> | undefined
 
       try {
         const body = await response.json()
@@ -118,12 +124,16 @@ export class MizzenClient {
           } else if (typeof errorBody["detail"] === "string") {
             detail = errorBody["detail"]
           } else {
+            if (typeof errorBody["detail"] === "object" && errorBody["detail"] !== null) {
+              details = errorBody["detail"] as Record<string, unknown>
+            }
             detail = formatStructuredDetail(errorBody["detail"]) ?? detail
           }
           // Our error format: { error: { code, message } }
           const err = errorBody["error"]
           if (typeof err === "object" && err !== null) {
             const ee = err as Record<string, unknown>
+            details = ee
             const msg = typeof ee["message"] === "string" ? ee["message"] : undefined
             if (msg) detail = msg
           }
@@ -132,7 +142,7 @@ export class MizzenClient {
         // Response body is not JSON
       }
 
-      throw new ApiError(response.status, detail)
+      throw new ApiError(response.status, detail, details)
     }
 
     if (response.status === 204 || response.headers.get("content-length") === "0") {
@@ -189,12 +199,12 @@ export class MizzenClient {
     }
   }
 
-  async get<T>(path: string, params?: Record<string, string>): Promise<T> {
-    return this.request<T>("GET", path, { params })
+  async get<T>(path: string, params?: Record<string, string>, timeoutMs?: number): Promise<T> {
+    return this.request<T>("GET", path, { params, timeoutMs })
   }
 
-  async post<T>(path: string, body?: unknown): Promise<T> {
-    return this.request<T>("POST", path, { body })
+  async post<T>(path: string, body?: unknown, timeoutMs?: number): Promise<T> {
+    return this.request<T>("POST", path, { body, timeoutMs })
   }
 
   async put<T>(path: string, body?: unknown): Promise<T> {

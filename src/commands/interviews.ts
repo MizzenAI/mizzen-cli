@@ -1,10 +1,10 @@
 import { Command } from "commander"
-import { getClient } from "../client"
+import { ApiError, getClient, type MizzenClient } from "../client"
 import { loadConfig } from "../config"
 import { colorStatus, formatDuration } from "../format"
 import { printData, printKeyValue, success } from "../output"
-import { handleError } from "../errors"
-import type { Interview, InterviewListResponse, InterviewStats } from "../types/api"
+import { handleError, translationDetails } from "../errors"
+import type { Interview, InterviewListResponse, InterviewStats, InterviewLanguages } from "../types/api"
 
 function getSiteUrl(): string {
   return loadConfig().api.site_url.replace(/\/$/, "")
@@ -48,6 +48,54 @@ export function buildInterviewConfig(
     config["tts"] = { ...existingTts, enabled: opts.tts }
   }
   return config
+}
+
+type SourceLanguageOptions = { sourceLanguage?: string; autoSourceLanguage?: boolean }
+
+export function sourceLanguagePayload(opts: SourceLanguageOptions): Record<string, unknown> {
+  if (opts.sourceLanguage !== undefined && opts.autoSourceLanguage) {
+    throw new Error("--source-language and --auto-source-language cannot be used together")
+  }
+  // Open API models accept field names (populate_by_name=True).
+  // Sending source_language explicitly selects manual mode on the server.
+  if (opts.sourceLanguage !== undefined) {
+    if (!opts.sourceLanguage.trim()) throw new Error("--source-language must not be empty")
+    return { source_language: opts.sourceLanguage }
+  }
+  return opts.autoSourceLanguage ? { source_language_mode: "auto" } : {}
+}
+
+export async function publishInterviewAndWait(
+  client: Pick<MizzenClient, "get" | "post">,
+  slug: string,
+  autoTranslate = true,
+  { timeoutMs = 600_000, pollIntervalMs = 2_000 } = {},
+): Promise<{ slug: string; status: string; published_at: string }> {
+  const deadline = Date.now() + timeoutMs
+  const remaining = () => {
+    const ms = deadline - Date.now()
+    if (ms <= 0) throw new Error("Translation wait timed out. Background jobs may continue. Run interview publish again to check and publish.")
+    return Math.min(ms, 120_000)
+  }
+  while (true) {
+    try {
+      return await client.post(`/interviews/${slug}/publish`, { auto_translate: autoTranslate }, remaining())
+    } catch (err) {
+      if (!(err instanceof ApiError) || err.status !== 409 || err.code !== "TRANSLATIONS_IN_PROGRESS" || !autoTranslate) throw err
+      process.stderr.write(`Translations in progress.\n${translationDetails(err.details)}\n`)
+    }
+    while (true) {
+      await new Promise(resolve => setTimeout(resolve, Math.min(pollIntervalMs, remaining())))
+      const state = await client.get<InterviewLanguages>(`/interviews/${slug}/languages`, undefined, remaining())
+      if (!Array.isArray(state.languages)) throw new Error("Invalid language status response: languages must be an array")
+      process.stderr.write(translationDetails(state) + "\n")
+      if (state.languages.some(l => l.job?.status === "queued" || l.job?.status === "running")) continue
+      if (state.languages.some(l => l.status !== "complete")) {
+        throw new ApiError(409, "TRANSLATIONS_INCOMPLETE: Translation did not complete", { code: "TRANSLATIONS_INCOMPLETE", languages: state.languages })
+      }
+      break
+    }
+  }
 }
 
 export function registerInterviewsCommand(program: Command): void {
@@ -102,6 +150,8 @@ export function registerInterviewsCommand(program: Command): void {
           ["Background", data.background || "-"],
           ["Study Goal", data.study_goal || "-"],
           ["Language", data.user_language],
+          ...(data.source_language !== undefined ? [["Source language", data.source_language ?? "-"] as [string, string]] : []),
+          ...(data.source_language_mode != null ? [["Source language mode", data.source_language_mode] as [string, string]] : []),
           ["Participants", String(data.participant_count)],
           ["Created", data.created_at?.slice(0, 10) ?? "-"],
           ["Published", data.published_at?.slice(0, 10) ?? "-"],
@@ -124,7 +174,9 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--goal <goal>", "Study goal")
     .option("--welcome <msg>", "Welcome message")
     .option("--closing <msg>", "Closing message")
-    .option("--language <lang>", "Researcher language (zh, en, ja, ko, fr, de, es, pt, ru, ar, it, hi, th, vi, id, ms, tr, pl, nl, sv, fil, te, zh-HK, zh-TW)", "zh")
+    .option("--language <lang>", "Researcher language (zh, en, ja, ko, fr, de, es, pt, ru, ar, it, hi, th, vi, id, ms, tr, pl, nl, sv, fil, te, uk, nb, bn, zh-HK, zh-TW)", "zh")
+    .option("--source-language <lang>", "Pin the source language (manual mode)")
+    .option("--auto-source-language", "Use automatic source language detection")
     .option("--available-languages <list>", "Comma-separated translation languages (e.g. zh,en,ja). Same set as --language")
     .option("--mode <mode>", "Interview mode: audio, video, video_screen, text", "audio")
     .option("--talk-mode <mode>", "Talk mode: manual (push-to-talk), auto (voice-activated)", "manual")
@@ -133,12 +185,13 @@ export function registerInterviewsCommand(program: Command): void {
     .action(async (opts: {
       title: string; externalTitle?: string; description?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language: string;
-      availableLanguages?: string;
+      availableLanguages?: string; sourceLanguage?: string; autoSourceLanguage?: boolean;
       mode: string; talkMode: string; tts?: boolean; allowAnonymous: boolean
     }) => {
       try {
         const client = getClient()
         const body: Record<string, unknown> = {
+          ...sourceLanguagePayload(opts),
           title: opts.title,
           userLanguage: opts.language,
           allowAnonymous: opts.allowAnonymous,
@@ -178,7 +231,9 @@ export function registerInterviewsCommand(program: Command): void {
     .option("--goal <goal>", "New study goal")
     .option("--welcome <msg>", "New welcome message")
     .option("--closing <msg>", "New closing message")
-    .option("--language <lang>", "New researcher language (zh, en, ja, ko, fr, de, es, pt, ru, ar, it, hi, th, vi, id, ms, tr, pl, nl, sv, fil, te, zh-HK, zh-TW)")
+    .option("--language <lang>", "New researcher language (zh, en, ja, ko, fr, de, es, pt, ru, ar, it, hi, th, vi, id, ms, tr, pl, nl, sv, fil, te, uk, nb, bn, zh-HK, zh-TW)")
+    .option("--source-language <lang>", "Pin the source language (manual mode)")
+    .option("--auto-source-language", "Use automatic source language detection")
     .option("--available-languages <list>", "Comma-separated translation languages (e.g. zh,en,ja). Same set as --language")
     .option("--mode <mode>", "Interview mode: audio, video, video_screen, text")
     .option("--talk-mode <mode>", "Talk mode: manual, auto")
@@ -189,12 +244,12 @@ export function registerInterviewsCommand(program: Command): void {
     .action(async (slug: string, opts: {
       title?: string; externalTitle?: string; description?: string; background?: string;
       goal?: string; welcome?: string; closing?: string; language?: string;
-      availableLanguages?: string;
+      availableLanguages?: string; sourceLanguage?: string; autoSourceLanguage?: boolean;
       mode?: string; talkMode?: string; tts?: boolean; allowAnonymous?: boolean
     }) => {
       try {
         const client = getClient()
-        const body: Record<string, unknown> = {}
+        const body: Record<string, unknown> = sourceLanguagePayload(opts)
         if (opts.title) body["title"] = opts.title
         if (opts.externalTitle) body["externalTitle"] = opts.externalTitle
         if (opts.description) body["description"] = opts.description
@@ -293,7 +348,8 @@ export function registerInterviewsCommand(program: Command): void {
   interviews
     .command("publish <slug>")
     .description("Publish a draft interview")
-    .action(async (slug: string) => {
+    .option("--no-auto-translate", "Fail if any translation is incomplete")
+    .action(async (slug: string, opts: { autoTranslate: boolean }) => {
       try {
         const client = getClient()
 
@@ -322,9 +378,11 @@ export function registerInterviewsCommand(program: Command): void {
         )
 
         // Step 2: Publish
-        await client.post(`/interviews/${slug}/publish`)
+        const published = await publishInterviewAndWait(client, slug, opts.autoTranslate)
         success(`Interview ${slug} published`)
         printKeyValue([
+          ["Status", published.status],
+          ["Published", published.published_at],
           ["管理链接", getManageUrl(slug)],
           ["预览链接", getPreviewUrl(slug)],
         ])

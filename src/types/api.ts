@@ -8,6 +8,8 @@ export interface Interview {
   welcome_message: string | null
   closing_message: string | null
   allow_anonymous: boolean
+  source_language?: string | null
+  source_language_mode?: "auto" | "manual"
   user_language: string
   participant_count: number
   created_at: string | null
@@ -110,4 +112,15 @@ export interface InsightResponse {
   version: number
   sections: unknown[]
   created_at: string
+}
+
+export interface InterviewLanguages {
+  languages: Array<{
+    locale: string
+    status: "empty_draft" | "generating" | "failed" | "incomplete" | "complete"
+    missing: number
+    total: number
+    failed_targets?: Array<{ hash: string; scope: string }>
+    job?: { status: string; done: number; total: number; failed_count: number; last_error_code?: string | null } | null
+  }>
 }
