@@ -161,6 +161,31 @@ skills/mizzen-cli/
 
 ---
 
+## 原文语言与多语言发布
+
+创建时默认自动识别原文语言；更新时省略语言设置参数会保留当前模式。只有用户明确要求固定原文语言时，才使用 `--source-language <lang>`。要求编写英文大纲本身不代表固定原文语言。`--language` 仍表示研究者语言。
+
+```bash
+# 创建时固定原文语言为英语
+mizzen-cli interview create -t "产品体验调研" --source-language en
+# 更新时固定原文语言
+mizzen-cli interview update <slug> --source-language en
+# 恢复自动识别（create 也支持此参数）
+mizzen-cli interview update <slug> --auto-source-language
+# 查看返回的原文语言及 auto / manual 模式
+mizzen-cli interview get <slug>
+# 默认补齐全部目标语言后原子发布
+mizzen-cli interview publish <slug>
+# 严格模式：译文缺失就退出，不启动补齐
+mizzen-cli interview publish <slug> --no-auto-translate
+```
+
+`--source-language` 和 `--auto-source-language` 互斥，同时使用会以退出码 1 终止。前者发送 `source_language`，由服务端固定为 manual 模式；后者发送 `source_language_mode: "auto"`。
+
+发布默认发送 `auto_translate: true`。后端返回 `TRANSLATIONS_IN_PROGRESS` 时，CLI 每 2 秒读取语言状态并展示进度，全部完整后再次发布。发布和轮询共用 10 分钟上限。超时后后台任务可能仍在运行，可重新执行发布命令。失败或仍缺段时，CLI 显示各语言缺失段数、任务错误和失败段落，并以退出码 1 终止。
+
+`--no-auto-translate` 发送 `auto_translate: false`。收到 `TRANSLATIONS_INCOMPLETE` 时，CLI 显示各语言缺失段数并以退出码 1 终止。
+
 <p align="center">
   <a href="https://mizzen.top">mizzen.top</a> · MIT License
 </p>
