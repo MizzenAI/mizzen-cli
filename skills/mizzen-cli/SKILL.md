@@ -107,3 +107,9 @@ Interview (slug)
 | `conversation list/get/transcript/answers/export/hide/unhide` | [conversation.md](references/conversation.md) | 对话数据读取、导出及可见性管理 |
 | `insight get/generate` | [insight.md](references/insight.md) | 洞察报告获取与生成 |
 | `auth/config` | [auth-config.md](references/auth-config.md) | API Key 管理、CLI 配置 |
+
+## 原文语言与发布
+
+普通创建保持原文语言自动识别。只有用户明确要求固定时，才给 `interview create` 或 `update` 传 `--source-language <lang>`。`--auto-source-language` 恢复自动识别，两者互斥。要求生成英文大纲不等于固定原文语言；`--language` 仍是研究者语言。
+
+获准发布后，`interview publish` 默认补齐全部目标语言，并展示进度；全部完整后再完成原子发布。`--no-auto-translate` 关闭自动补齐，有缺段就报错。失败或超过 10 分钟时命令以退出码 1 终止；超时后后台任务可能继续，重新执行发布可检查并收尾。详见 [interview.md](references/interview.md)。
